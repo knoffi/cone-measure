@@ -1,14 +1,16 @@
-import coneVol as cV
+import coneVol2 as cV
 import matrix as M
 import randomPolygon3Centered as rP
 import polygonTests as pT
 import math
-def coneVolTest( polygon , coneVolume):
+def coneVolTest( polygon , coneVolume , eps):
     diff = 0
     coneData = cV.getConeVol( polygon )
     for i in range(len(polygon)):
         diff += M.dist( coneData[ i - 1 ] , coneVolume[ i - 1])**2
-    return diff
+    if diff >= eps:
+        print( 'coneVolTest failed with polygon')
+        print( polygon )
 
 def getSumOuterNormal( polygon ):
     coneVol = cV.getConeVol( polygon )
@@ -36,6 +38,7 @@ def normalsTest( repeats , verticesNumber, test_eps):
             #print( P )
             #print( diff )
             normalNormsPrint(coneVol)
+            print(' normalsTest failed at')
             print(len(coneVol))
             print(len(P))
             pT.plotPoly( P , 'r')
@@ -46,9 +49,26 @@ def normalNormsPrint( coneVolume ):
         print( M.norm( [ data[0] , data[1] ] ) )
 
 
-normalsTest( 20 , 6 , 0.001)
-Q = [[-2.406267384872555, -6.217961802188315], [-1.1607343314092495, 0.9785298728916498], [-0.5313683781618874, 1.1297321830414795], [-0.5313683781618874, 1.1297321830414795]]
-#print( pT.isConvexRun( Q ) )
-#print( pT.isConvex( Q ))
-#pT.plotPoly( Q , 'r')
+def polyFunctionalTest( repeats , edgeNumber, eps ):
+    turns = 0
+    while turns < repeats:
+        P = rP.getRandomPolygon( edgeNumber )
+        cD = cV.getConeVol( P )
+        vertex = P[0]
+        value_vertex = cV.polyFunctional( cD , vertex )
+        grad_vertex = cV.gradPolyFunctional( cD , vertex )
 
+        # getConeVol, polyFunctional oder gradPolyFunctional könnte falsch sein...
+
+        if( value_vertex >= eps):
+            print( ' Fehler bei polyFunctionalTest , value zu hoch')
+            print( P )
+            print( value_vertex )
+
+        if( M.norm(grad_vertex) >= eps):
+            print(' Fehler bei polyFunctionalTest , grad zu hoch')
+            print( P )
+            print( grad_vertex )
+        turns  += 1
+
+polyFunctionalTest( 20 , 5 , 0.000001 )
