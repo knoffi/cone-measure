@@ -3,6 +3,9 @@ import matrix as M
 import randomPolygon3Centered as rP
 import polygonTests as pT
 import math
+import numpy
+import random
+
 def coneVolTest( polygon , coneVolume , eps):
     diff = 0
     coneData = cV.getConeVol( polygon )
@@ -71,4 +74,69 @@ def polyFunctionalTest( repeats , edgeNumber, eps ):
             print( grad_vertex )
         turns  += 1
 
-polyFunctionalTest( 20 , 5 , 0.000001 )
+def hMethodPolyFunctionalCheck( cD , point , eps , delta ):
+
+    while( True ):
+        try:
+            value = cV.polyFunctional( cD , point )
+            break
+
+        except ZeroDivisionError:
+            return True
+            break
+
+    e_1 = [ 1 , 0 ]
+    e_2 = [ 0 , 1 ]
+    grad_point = cV.gradPolyFunctional( cD , point )
+
+    # diff is a row, grad is a column...
+    diff = M.Matrix( [ grad_point ])
+    diff_1 = diff.image( e_1  )[0]
+    diff_2 = diff.image( e_2  )[0]
+
+    pointTrans_1 = M.addVek( point , M.scaleVek( delta , e_1 ) )
+    pointTrans_2 = M.addVek( point , M.scaleVek( delta , e_2 ) )
+
+    diffQuotient_1 = cV.polyFunctional( cD , point ) - cV.polyFunctional( cD , pointTrans_1)
+    diffQuotient_1 = delta * diffQuotient_1
+
+    diffQuotient_2 = cV.polyFunctional( cD , point ) - cV.polyFunctional( cD , pointTrans_2)
+    diffQuotient_2 = delta * diffQuotient_2
+
+    dist_1 = math.fabs(diff_1 - diffQuotient_1 )
+    dist_2 = math.fabs(diff_2 - diffQuotient_2 )
+
+    if dist_1 > eps or dist_2 > eps:
+        print(' difference equals ')
+        print( dist_1 )
+        print( dist_2 )
+        return False
+
+    return True
+
+def gradPolyFunctionalTest( repeats ,  edgeNumber ,  eps , delta ):
+
+    n = 0
+
+    while n <= repeats:
+
+        P = rP.getRandomPolygon( edgeNumber )
+
+        cD_test = cV.getConeVol( P )
+        point_test = [ random.random() * 10 , random.random() * 10 ]
+
+        # could be improved by making delta smaller if check is false ... orby setting point_test in the near of an vertex...
+
+        check = hMethodPolyFunctionalCheck( cD_test , point_test , eps , delta )
+
+        if not check:
+            print( ' gradPolyFunctionalTest failed with polytop and point_test : ')
+            print( P )
+            print( point_test )
+
+        n = n + 1
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# could be improved by making delta smaller if check is false ... orby setting point_test in the near of an vertex...
+gradPolyFunctionalTest( 3 , 5 , 0.1 , 0.000001 )
+#polyFunctionalTest( 20 , 5 , 0.000001 )
