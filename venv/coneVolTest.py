@@ -74,7 +74,7 @@ def polyFunctionalTest( repeats , edgeNumber, eps ):
             print( grad_vertex )
         turns  += 1
 
-def hMethodPolyFunctionalCheck( cD , point , eps , delta ):
+def hMethodPolyFunctionalCheck( cD , point , eps , h ):
 
     while( True ):
         try:
@@ -94,14 +94,16 @@ def hMethodPolyFunctionalCheck( cD , point , eps , delta ):
     diff_1 = diff.image( e_1  )[0]
     diff_2 = diff.image( e_2  )[0]
 
-    pointTrans_1 = M.addVek( point , M.scaleVek( delta , e_1 ) )
-    pointTrans_2 = M.addVek( point , M.scaleVek( delta , e_2 ) )
+    pointTrans_1 = M.addVek( point , M.scaleVek( h , e_1 ) )
+    pointTrans_2 = M.addVek( point , M.scaleVek( h , e_2 ) )
 
-    diffQuotient_1 = cV.polyFunctional( cD , point ) - cV.polyFunctional( cD , pointTrans_1)
-    diffQuotient_1 = delta * diffQuotient_1
+    diffQuotient_1 = cV.polyFunctional( cD , pointTrans_1) / h
+    substraction_1 = cV.polyFunctional( cD , point ) / h
+    diffQuotient_1 = diffQuotient_1 - substraction_1
 
-    diffQuotient_2 = cV.polyFunctional( cD , point ) - cV.polyFunctional( cD , pointTrans_2)
-    diffQuotient_2 = delta * diffQuotient_2
+    diffQuotient_2 = cV.polyFunctional(cD, pointTrans_2) / h
+    substraction_2 = cV.polyFunctional(cD, point) / h
+    diffQuotient_2 = diffQuotient_2 - substraction_2
 
     dist_1 = math.fabs(diff_1 - diffQuotient_1 )
     dist_2 = math.fabs(diff_2 - diffQuotient_2 )
@@ -110,33 +112,174 @@ def hMethodPolyFunctionalCheck( cD , point , eps , delta ):
         print(' difference equals ')
         print( dist_1 )
         print( dist_2 )
+        print(' calculated diff and approximated diff:')
+        diff.list()
+        print( [diffQuotient_1 , diffQuotient_2])
         return False
 
     return True
 
-def gradPolyFunctionalTest( repeats ,  edgeNumber ,  eps , delta ):
+def gradPolyFunctionalTest_random( repeats ,  edgeNumber ,  eps , h , delta , nearby_option):
 
-    n = 0
+    n = 1
+    if not nearby_option:
+        while n <= repeats:
 
-    while n <= repeats:
+            P = rP.getRandomPolygon( edgeNumber )
 
-        P = rP.getRandomPolygon( edgeNumber )
+            cD_test = cV.getConeVol( P )
+            point_test = [ random.random() * 10 , random.random() * 10 ]
 
-        cD_test = cV.getConeVol( P )
-        point_test = [ random.random() * 10 , random.random() * 10 ]
+            # could be improved by making delta smaller if check is false ... orby setting point_test in the near of an vertex...
+
+            check = hMethodPolyFunctionalCheck( cD_test , point_test , eps , h )
+
+            if not check:
+                print(' gradPolyFunctionalTest failed with polytop , point_test , value : ')
+                print(P)
+                print(point_test)
+                print(cV.polyFunctional(cD_test, point_test))
+
+            n = n + 1
+    else:
+        while n <= repeats:
+
+            P = rP.getRandomPolygon(edgeNumber)
+
+            cD_test = cV.getConeVol(P)
+            point_test = [random.random() , random.random() ]
+            norm = M.norm(point_test)
+            point_test = M.scaleVek( delta / norm , point_test )
+            print(' here is the translation')
+            print(point_test)
+            point_test = M.addVek( point_test , P[0])
+            # could be improved by making delta smaller if check is false ... orby setting point_test in the near of an vertex...
+
+            check = hMethodPolyFunctionalCheck(cD_test, point_test, eps, h)
+
+            if not check:
+                print(' gradPolyFunctionalTest failed with polytop , point_test , value : ')
+                print(P)
+                print(point_test)
+                print(cV.polyFunctional(cD_test, point_test))
+
+            n = n + 1
+
+def gradPolyFunctionalTest_array( polygon_list , point_list , eps , h ):
+    index = 0
+    for P in polygon_list:
+
+        cD_test = cV.getConeVol(P)
+        point_test = point_list[index]
 
         # could be improved by making delta smaller if check is false ... orby setting point_test in the near of an vertex...
 
-        check = hMethodPolyFunctionalCheck( cD_test , point_test , eps , delta )
+        check = hMethodPolyFunctionalCheck(cD_test, point_test, eps, h)
 
         if not check:
-            print( ' gradPolyFunctionalTest failed with polytop and point_test : ')
-            print( P )
-            print( point_test )
+            print(' gradPolyFunctionalTest failed with polytop , point_test , value : ')
+            print(P)
+            print(point_test)
+            print( cV.polyFunctional( cD_test , point_test ) )
 
-        n = n + 1
+        index += 1
+
+def hMethodNextVertexCheck( u , V, point , eps , h):
+
+    while(True):
+        try:
+            nextVektor = cV.getNextVertex( u , V , point)
+            break
+        except ZeroDivisionError:
+            return True
+            break
+
+    diff = cV.diffGetNextVertex( u , V , point)
+    e_1 = [ 1 , 0 ]
+    e_2 = [ 0 , 1 ]
+
+    diff_1 = diff.image( e_1 )
+    diff_2 = diff.image( e_2 )
+
+    point_diff1 = M.addVek( point , M.scaleVek( h , e_1 ))
+    quotient_diff1 = M.subVek( M.scaleVek( 1 / h , cV.getNextVertex( u , V , point_diff1 ) ) , M.scaleVek( 1 / h , cV.getNextVertex( u , V, point ) ) )
+
+    point_diff2 = M.addVek(point, M.scaleVek(h, e_2))
+    quotient_diff2 = M.subVek(M.scaleVek(1 / h, cV.getNextVertex(u, V, point_diff2)), M.scaleVek(1 / h, cV.getNextVertex(u, V, point)))
+
+    difference_1 = M.dist( quotient_diff1 , diff_1)
+    difference_2 = M.dist( quotient_diff2 , diff_2)
+
+    print(' the differences equals')
+    print(difference_1)
+    print(difference_2)
+
+    if difference_1 >= eps or difference_2 >= eps :
+        print( ' the differences euqal' )
+        print( difference_1 )
+        print( difference_2 )
+        return False
+    return True
+
+def hMethodConeVolIteratorCheck( cD ,  point , eps , h):
+
+    while(True):
+        try:
+            vektor = cV.coneVolIterator( cD , point)
+            break
+        except ZeroDivisionError:
+            return True
+            break
+
+    diff = cV.diffConeVolumeIterator( cD , point)
+
+    e_1 = [ 1 , 0 ]
+    e_2 = [ 0 , 1 ]
+
+    diff_1 = diff.image( e_1 )
+    diff_2 = diff.image( e_2 )
+
+    point_diff1 = M.addVek( point , M.scaleVek( h , e_1 ))
+    quotient_diff1 = M.subVek( M.scaleVek( 1 / h , cV.coneVolIterator( cD , point_diff1 ) ) , M.scaleVek( 1 / h , cV.coneVolIterator( cD , point ) ) )
+
+    point_diff2 = M.addVek(point, M.scaleVek(h, e_2))
+    quotient_diff2 = M.subVek(M.scaleVek(1 / h, cV.coneVolIterator( cD , point_diff2 ) ), M.scaleVek(1 / h, cV.coneVolIterator( cD ,  point)))
+
+    difference_1 = M.dist( quotient_diff1 , diff_1)
+    difference_2 = M.dist( quotient_diff2 , diff_2)
+
+    print(' the differences equals')
+    print(diff_1)
+    print(quotient_diff1)
+    print(diff_2)
+    print(quotient_diff2)
+
+    if difference_1 >= eps or difference_2 >= eps :
+        print( ' the differences equals' )
+        print( difference_1 )
+        print( difference_2 )
+        return False
+    return True
+
+
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # could be improved by making delta smaller if check is false ... orby setting point_test in the near of an vertex...
-gradPolyFunctionalTest( 3 , 5 , 0.1 , 0.000001 )
+#gradPolyFunctionalTest_random( 1 , 5 , 0.1 , 0.000000000001  , 0.0001 , True )
 #polyFunctionalTest( 20 , 5 , 0.000001 )
+
+polygons_test = [
+    [[9.203330824769969, 5.091434487244416], [-5.6003542709433995, 2.0960543313403526], [-2.469763362739936, -1.9552999854419217], [-1.689083779038116, -2.2524032885794893], [0.5558705879514816, -2.979785544563356]]
+]
+cD_test = cV.getConeVol(polygons_test[0])
+points_test = [ [9.202238149608856, 5.089797764821817] ]
+
+cD_testeasy = [[ 1 , 0 , 1 ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
+point_testeasy = [ 1 , 1.001 ]
+
+#pT.plotPoly( polygons_test[0] , 'r')
+#gradPolyFunctionalTest_array( polygons_test , points_test , 0.1 , 0.0001 )
+cD_test = cV.getConeVol( polygons_test[0])
+# print( cV.getConeVolIterator( cD_testeasy , point_testeasy ))
+hMethodConeVolIteratorCheck( cD_testeasy , point_testeasy , 0.1 , 0.00001)
+
