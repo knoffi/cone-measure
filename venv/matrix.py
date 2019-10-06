@@ -404,6 +404,7 @@ def subVek(v, w):
         i += 1
     return d
 
+
 # only works, if both vectors have the same length?
 def polarAngleSub( v_polar , w_polar ):
     alpha = v_polar[0]
@@ -439,6 +440,25 @@ def norm(vector):
 def dist( v , w ):
     diff = subVek( v , w )
     return norm( diff )
+
+def subMatrix( A , B):
+    n = A.size()[0]
+    result_rows = []
+    for i in range(n):
+        v = A.rows[i]
+        w = B.rows[i]
+        result_rows.append( subVek( v , w ) )
+    return Matrix(result_rows)
+
+def addMatrix( A , B):
+    n = A.size()[0]
+    result_rows = []
+    for i in range(n):
+        v = A.rows[i]
+        w = B.rows[i]
+        result_rows.append( addVek( v , w ) )
+    return Matrix(result_rows)
+
 
 def distMatrix( A , B ):
     result = 0

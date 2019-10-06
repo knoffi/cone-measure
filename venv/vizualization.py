@@ -199,12 +199,12 @@ def vizLowGrad( cD , n , first_bound, second_bound , third_bound):
 #polygon_ohShit = [[0.9440772944478957, -0.5997771631098889], [-16.804067260622325, -40.38884325863358], [-17.999708289662934, -10.829240656802343], [-32.34730498625317, 88.7483757416121]]
 #pT.plotPoly( polygon_ohShit , 'r')
 polygon_test = [[2.673368179682499, 3.09152986544487], [1.2086453601351808, 4.28111986768648], [-1.1761317014903958, -0.022433820601322707], [-3.4952312190856785, -4.881491593765966], [0.789349380758395, -2.4687243187640626]]
-#pT.plotPoly( polygon_test , 'r')
+pT.plotPoly( polygon_test , 'r')
 
 #print( polygon_test )
 cD_test = cV.getConeVol( polygon_test )#[ [ 1 , 0 , 1  ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
 
-#vizLowValue( cD_test , 10 , 0.1 , 1 , 500)
+vizLowValue( cD_test , 10 , 1 , 10 , 100)
 #vizLowGrad( cD_test , 10 , 2 , 1 , 1)
 
-visiualizeLowValueOnGrid( 0.01 , 0.0001 , cD_test , [4.3575, 1.6424999999999996] , 0.00001 , 0.0001 , 0.001)
+visiualizeLowValueOnGrid( 1 , 0.01 , cD_test , [4.3575, 1.6424999999999996] , 0.001 , 0.01 , 0.1)

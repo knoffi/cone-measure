@@ -4,6 +4,7 @@ import matrix as M
 import polygonTests as pT
 import preSolver2 as pS
 import randomPolygon3Centered as rP
+import matplotlib.pyplot as mp
 
 def stepSize_posGrad(cD, point, d , n):
     alpha = 0.5
@@ -53,17 +54,31 @@ def coneVolumeDescendArmijo( cD , start , crease , efficiency , beta_1 , beta_2 
     result = start
     n=0
 
+    previous = [ -1 , -1 ]
+
     print( 'gehe in while schleife ')
     while ( cV.phi( result , cD ) > eps_descend ):
-        d = M.scaleVek( -1 , cV.gradPhi( result , cD ) )
-        d = M.scaleVek( 1 / M.norm(d) , d )
-        alpha = stepSizeArmijo( cD, result , d , crease , efficiency , beta_1 , beta_2 )
-        result = M.addVek( result , M.scaleVek( alpha, d ) )
-        if n % 300 == 0:
+        if M.dist( previous , result) > 0.1:
+            previous[0] = result[0]
+            previous[1] = result[1]
+            d = M.scaleVek( -1 , cV.gradPhi( result , cD ) )
+            #d = M.scaleVek( 1 / M.norm(d) , d )
+            alpha = stepSizeArmijo( cD, result , d , crease , efficiency , beta_1 , beta_2 )
+            result = M.addVek( result , M.scaleVek( alpha, d ) )
+        else:
+            previous[0] = result[0]
+            previous[1] = result[1]
+            d = M.scaleVek(-1, cV.gradPhi(result, cD))
+            # d = M.scaleVek( 1 / M.norm(d) , d )
+            alpha = stepSize_posGrad( cD, result, d, n)
+            result = M.addVek(result, M.scaleVek(alpha, d))
+
+        if n % 10 == 0:
             print('here comes result')
             print(cV.gamma( cD , result))
             print( cV.gradPhi( result , cD ) )
             print( cV.phi( result , cD ))
+
         n = n + 1
     return result
 
@@ -102,7 +117,7 @@ cD_test2 = cV.getConeVol( polygon_test2 )
 
 print( cD_test2 )
 
-pT.plotPoly( polygon_test2 , 'r')
+#pT.plotPoly( polygon_test2 , 'r')
 start_test2 = [4.7, 1.6]
 
 print( 'hier kommt der start' )
