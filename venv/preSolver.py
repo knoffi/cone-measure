@@ -326,6 +326,7 @@ def lineSolution( cD , params ):
     v = cV.gamma( cD , params )
     stepsize = 0.5
 
+def boxGradPreSolver( cD , upperBound)
     #-5.551115123125783e-17
     #habe
     #pos

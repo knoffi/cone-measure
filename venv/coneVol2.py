@@ -177,6 +177,17 @@ def gradPhi(params,cD):
 
     return M.image(v)
 
+def gradPhiApprox( params , cD , h ):
+    e_1 = [1, 0]
+    e_2 = [0, 1]
+
+    point_diff1 = M.addVek(params, M.scaleVek(h, e_1))
+    quotient_diff1 = phi(point_diff1 , cD ) / h  - phi(params , cD ) / h
+
+    point_diff2 = M.addVek(params, M.scaleVek(h, e_2))
+    quotient_diff2 = phi(point_diff2, cD) / h - phi(params, cD) / h
+
+    return [ quotient_diff1 , quotient_diff2 ]
 
 def g(a, x):
     return a * x[0] ** 2
