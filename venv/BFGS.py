@@ -10,7 +10,7 @@ import matplotlib.pyplot as mp
 # I use copyTrans() two times on s_Matrix and y_Matrix, thus speed of this can be improved
 def getBFGSApprox( cD , params_new , params_k , A_k ):
     s_vector = M.subVek(params_new, params_k)
-    y_vector = M.subVek( cV.gradPhiApprox( params_new , cD , 0.0001 ) , cV.gradPhi( params_k , cD , 0.0001 ) )
+    y_vector = M.subVek( cV.gradPhiApprox( params_new , cD , 0.0001 ) , cV.gradPhiApprox( params_k , cD , 0.0001 ) )
 
     # s_Matrix and y_Matix is a column, not a row, therefor copyTrans
     s_Matrix = M.Matrix( [ s_vector ] ).copyTrans()
@@ -57,23 +57,27 @@ def getBFGS( cD , params_new , params_k , A_k ):
     divisor2 = M.scal(y_vector , s_vector )
 
     quotient = dividend2
+    #print( 'vectors are')
+    #print(y_vector)
+    #print( s_vector)
+    #print( cV.gradPhi(params_new , cD))
     quotient.scale( 1.0 / divisor2 )
 
     rankTwoMod = M.addMatrix( rankOneMod , quotient )
 
     return rankTwoMod
 
-cD_test = [ [ 1 , 0 , 1 ] ,  [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
-params_newTest = [ 1.0 , 1.5 ]
-params_kTest = [ 1.2 , 1.0 ]
-s_vectorTest = M.subVek(params_newTest, params_kTest)
-A_kTest= M.Matrix([ [ 9 , 2 ] , [ 2 , 7 ] ])
-result_test = getBFGS( cD_test , params_newTest , params_kTest , A_kTest  )
-result_test.list()
+#cD_test = [ [ 1 , 0 , 1 ] ,  [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
+#params_newTest = [ 1.0 , 1.5 ]
+#params_kTest = [ 1.2 , 1.0 ]
+#s_vectorTest = M.subVek(params_newTest, params_kTest)
+#A_kTest= M.Matrix([ [ 9 , 2 ] , [ 2 , 7 ] ])
+#result_test = getBFGS( cD_test , params_newTest , params_kTest , A_kTest  )
+#result_test.list()
 
-print(result_test.image(s_vectorTest))
-print('here comes the anti gradient of the new params and the bfgs direction:')
-grad_test = cV.gradPhi( params_kTest , cD_test )
-direction_test = A_kTest.image( grad_test )
-print(M.scaleVek( 1.0 / M.norm(grad_test) , grad_test ) )
-print( M.scaleVek( 1.0 / M.norm(direction_test) , direction_test ))
+#print(result_test.image(s_vectorTest))
+#print('here comes the anti gradient of the new params and the bfgs direction:')
+#grad_test = cV.gradPhi( params_kTest , cD_test )
+#direction_test = A_kTest.image( grad_test )
+#print(M.scaleVek( 1.0 / M.norm(grad_test) , grad_test ) )
+#print( M.scaleVek( 1.0 / M.norm(direction_test) , direction_test ))

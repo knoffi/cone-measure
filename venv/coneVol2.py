@@ -167,15 +167,15 @@ def diffGamma(coneData, params):
 
 
 def phi(params,cD):
-    return polyFunctional(cD, gamma(cD,params))
+    return 1 * polyFunctional(cD, gamma(cD,params))
 
 # is this the correct gradient?
 def gradPhi(params,cD):
 
-    M = gradGamma(cD, params)
+    A = gradGamma(cD, params)
     v = gradPolyFunctional(cD, gamma(cD, params))
 
-    return M.image(v)
+    return M.scaleVek( 1 , A.image(v))
 
 def gradPhiApprox( params , cD , h ):
     e_1 = [1, 0]

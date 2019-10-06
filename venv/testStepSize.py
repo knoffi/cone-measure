@@ -10,9 +10,9 @@ cD = cV.getConeVol( polygon_test2 )
 params_now = [4.7, 1.6152821997297826]
 print(cV.gamma( cD , params_now))
 print(cV.phi( params_now , cD ))
-d = [-0.2083940408151545, -0.9780449497608644]
+d = [-0.2083940408151545, -0.9780449497608644] # should come from a BFGS algorithm to test the efficiency of BFGS directions
 grad = M.scaleVek(1.0 / M.norm( cV.gradPhi( params_now , cD)) , cV.gradPhi( params_now , cD) )
-grad_approx = cV.gradPhiApprox( params_now , cD , 0.0000001)
+grad_approx = cV.gradPhiApprox( params_now , cD , 0.00001)
 stepSize = 1
 params_next = M.addVek( params_now , M.scaleVek( stepSize , d))
 v.visiualizeLowValueOnGrid(0.001 , 0.00001 , cD , params_now , 0.02405 , 0.024059 , 0.02406)
