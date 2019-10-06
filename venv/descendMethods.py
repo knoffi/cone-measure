@@ -5,11 +5,15 @@ import polygonTests as pT
 import preSolver2 as pS
 import randomPolygon3Centered as rP
 import matplotlib.pyplot as mp
+import BFGS
+
+eps_descend = mE.getMachEps()
+
 
 def stepSize_posGrad(cD, point, d , n):
     alpha = 0.5
     nextPoint = M.addVek(point, M.scaleVek(alpha, d))
-    while ( cV.phi(point, cD ) < cV.phi( nextPoint , cD ) or pS.scalGrad( cD , nextPoint ) < 0 ):
+    while ( cV.phi(point, cD ) < cV.phi( nextPoint , cD ) ): #or pS.scalGrad( cD , nextPoint ) < 0 ):
         alpha = alpha * 0.5
         nextPoint = M.addVek(point, M.scaleVek(alpha, d))
     if n % 300 == 0:
@@ -26,7 +30,6 @@ def stepSizeArmijo( cD, point , d , crease , efficiency , beta_1 , beta_2):
     while notEfficient( cD , point , d , result , crease ):
         result = beta_2 * result
     return result
-eps_descend = mE.getMachEps()
 
 # works only if global minimum is zero and if its the only extremum
 def coneVolumeDescend( cD , start ):
@@ -66,21 +69,67 @@ def coneVolumeDescendArmijo( cD , start , crease , efficiency , beta_1 , beta_2 
             alpha = stepSizeArmijo( cD, result , d , crease , efficiency , beta_1 , beta_2 )
             result = M.addVek( result , M.scaleVek( alpha, d ) )
         else:
-            previous[0] = result[0]
-            previous[1] = result[1]
-            d = M.scaleVek(-1, cV.gradPhi(result, cD))
-            # d = M.scaleVek( 1 / M.norm(d) , d )
-            alpha = stepSize_posGrad( cD, result, d, n)
-            result = M.addVek(result, M.scaleVek(alpha, d))
-
-        if n % 10 == 0:
-            print('here comes result')
-            print(cV.gamma( cD , result))
-            print( cV.gradPhi( result , cD ) )
-            print( cV.phi( result , cD ))
+            print('here com previous and result')
+            print(result)
+            print(previous)
+            result = coneVolumeDescendBFGSApprox( cD , result , previous , crease , efficiency , beta_1 , beta_2 )
 
         n = n + 1
     return result
+
+def coneVolumeDescendBFGS( cD , params_new, params_prev , crease , efficiency , beta_1 , beta_2 ):
+    A_k = M.idMatrix(2)
+    n = 0
+    while( cV.phi( params_new , cD) >  eps_descend):
+        A_k = BFGS.getBFGS( cD , params_new , params_prev , A_k)
+        d = A_k.image( M.scaleVek( -1 , cV.gradPhi( params_new , cD ) ) )
+        d = M.scaleVek( 1.0 / M.norm(d) , d)
+
+        alpha = stepSizeArmijo( cD , params_new , d ,  crease , efficiency , beta_1 , beta_2 )
+
+        params_prev = [params_new[0] , params_new[1]]
+        d=  M.scaleVek( alpha , d )
+        params_new = M.addVek( params_new , d )
+
+        if n % 1 == 0:
+            print(n)
+            print('here comes params_new and params_prev BFGS result')
+            print(params_new)
+            print(params_prev)
+            print(cV.gamma( cD , params_new))
+            print( cV.gradPhi( params_new , cD ) )
+            print( cV.phi( params_new , cD ))
+
+        n = n + 1
+    return params_new
+
+def coneVolumeDescendBFGSApprox( cD , params_new, params_prev , crease , efficiency , beta_1 , beta_2 ):
+    A_k = M.idMatrix(2)
+    n = 0
+    while( cV.phi( params_new , cD) >  eps_descend):
+        A_k = BFGS.getBFGS( cD , params_new , params_prev , A_k)
+        d = A_k.image( M.scaleVek( -1 , cV.gradPhiApprox( params_new , cD , 0.0001 ) ) )
+        d = M.scaleVek( 1.0 / M.norm(d) , d)
+
+        alpha = stepSize_posGrad( cD , params_new , d ,  n ) #crease , efficiency , beta_1 , beta_2 )
+
+        params_prev = [params_new[0] , params_new[1]]
+        d=  M.scaleVek( alpha , d )
+        params_new = M.addVek( params_new , d )
+
+        if n % 1 == 0:
+            print(n)
+            print('here comes params_new and params_prev BFGS result')
+            print(params_new)
+            print(params_prev)
+            print(cV.gamma( cD , params_new))
+            print( cV.gradPhi( params_new , cD ) )
+            print( cV.phi( params_new , cD ))
+
+        n = n + 1
+    return params_new
+
+
 
 
 def getPolygonReversedOrder( polygon ):
@@ -101,7 +150,7 @@ cD_test = [ [ 1 , 0 , 1  ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
 #print( result_coordTest )
 #print( result_coordTest[0] * result_coordTest[1])
 
-beta_1test = 0.4
+beta_1test = 0.5
 beta_2test = 0.8
 crease_test = 0.2
 efficiency_test = 100

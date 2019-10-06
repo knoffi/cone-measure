@@ -189,6 +189,8 @@ def gradPhiApprox( params , cD , h ):
 
     return [ quotient_diff1 , quotient_diff2 ]
 
+
+
 def g(a, x):
     return a * x[0] ** 2
 

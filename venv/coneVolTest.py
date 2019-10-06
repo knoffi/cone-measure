@@ -15,6 +15,8 @@ def coneVolTest( polygon , coneVolume , eps):
         print( 'coneVolTest failed with polygon')
         print( polygon )
 
+coneVolTest( [[1,1] , [ -1 , 1] , [ -1 , -1 ] , [1 , -1]] , [ [ 1 , 0 , 1 ] , [ 0 , 1 , 1] , [-1 , 0 , 1 ] , [ 0 , -1 , 1 ]] , 0.1)
+
 def getSumOuterNormal( polygon ):
     coneVol = cV.getConeVol( polygon )
     normSum=0
