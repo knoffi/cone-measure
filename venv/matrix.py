@@ -432,6 +432,9 @@ def getMidPoint( v , w ):
         i = i + 1
     return result
 
+def addScaleVek( v , alpha , w ):
+    return addVek( v , scaleVek( alpha , w ) )
+
 
 # recently, this method calculated the norm squared (without root), and coneVolumeNewton worked
 def norm(vector):
