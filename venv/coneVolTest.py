@@ -15,6 +15,8 @@ def coneVolTest( polygon , coneVolume , eps):
         print( 'coneVolTest failed with polygon')
         print( polygon )
 
+coneVolTest( [[1,1] , [ -1 , 1] , [ -1 , -1 ] , [1 , -1]] , [ [ 1 , 0 , 1 ] , [ 0 , 1 , 1] , [-1 , 0 , 1 ] , [ 0 , -1 , 1 ]] , 0.1)
+
 def getSumOuterNormal( polygon ):
     coneVol = cV.getConeVol( polygon )
     normSum=0
@@ -185,7 +187,7 @@ def gradPolyFunctionalTest_array( polygon_list , point_list , eps , h ):
         index += 1
 
 def hMethodNextVertexCheck( u , V, point , eps , h):
-
+    nextVektor = cV.getNextVertex(u, V, point)
     while(True):
         try:
             nextVektor = cV.getNextVertex( u , V , point)
@@ -239,11 +241,13 @@ def hMethodConeVolIteratorCheck( cD ,  point , eps , h):
     diff_1 = diff.image( e_1 )
     diff_2 = diff.image( e_2 )
 
-    point_diff1 = M.addVek( point , M.scaleVek( h , e_1 ))
-    quotient_diff1 = M.subVek( M.scaleVek( 1 / h , cV.coneVolIterator( cD , point_diff1 ) ) , M.scaleVek( 1 / h , cV.coneVolIterator( cD , point ) ) )
+    point_diff11 = M.addVek( point , M.scaleVek( h , e_1 ))
+    point_diff12 = M.subVek(point, M.scaleVek(h, e_1))
+    quotient_diff1 = M.subVek( M.scaleVek( 1 / (2*h) , cV.coneVolIterator( cD , point_diff11 ) ) , M.scaleVek( 1 / (2*h) , cV.coneVolIterator( cD , point_diff12 ) ) )
 
-    point_diff2 = M.addVek(point, M.scaleVek(h, e_2))
-    quotient_diff2 = M.subVek(M.scaleVek(1 / h, cV.coneVolIterator( cD , point_diff2 ) ), M.scaleVek(1 / h, cV.coneVolIterator( cD ,  point)))
+    point_diff21 = M.addVek(point, M.scaleVek(h, e_2))
+    point_diff22 = M.subVek(point, M.scaleVek(h, e_2))
+    quotient_diff2 = M.subVek(M.scaleVek(1 / (2*h), cV.coneVolIterator( cD , point_diff21 ) ), M.scaleVek(1 / (2*h), cV.coneVolIterator( cD ,  point_diff22)))
 
     difference_1 = M.dist( quotient_diff1 , diff_1)
     difference_2 = M.dist( quotient_diff2 , diff_2)
@@ -261,6 +265,15 @@ def hMethodConeVolIteratorCheck( cD ,  point , eps , h):
         return False
     return True
 
+def coneVoliteratorTest ( cD , firstPointOfPolygon , eps):
+    vector = cV.getConeVolIterator( cD , firstPointOfPolygon )
+    if M.dist( vector , firstPointOfPolygon ) >= eps :
+        print( ' error at coneVolIterator Test with first polygon vertex and cD :')
+        print(firstPointOfPolygon)
+        print(cD)
+        return False
+    return True
+
 
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -274,12 +287,16 @@ polygons_test = [
 cD_test = cV.getConeVol(polygons_test[0])
 points_test = [ [9.202238149608856, 5.089797764821817] ]
 
-cD_testeasy = [[ 1 , 0 , 1 ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
+polygon_easy = [ [ 1, 0 ] , [ 0 , 1 ] , [ -1 , 0 ] , [ 0 , -1 ] ]
+cD_testeasy = cV.getConeVol(polygon_easy)
 point_testeasy = [ 1 , 1.001 ]
 
 #pT.plotPoly( polygons_test[0] , 'r')
 #gradPolyFunctionalTest_array( polygons_test , points_test , 0.1 , 0.0001 )
 cD_test = cV.getConeVol( polygons_test[0])
 # print( cV.getConeVolIterator( cD_testeasy , point_testeasy ))
-hMethodConeVolIteratorCheck( cD_testeasy , point_testeasy , 0.1 , 0.00001)
+#coneVoliteratorTest( cD_testeasy , [ 1 , 1.001 ] , 0.1)
+hMethodConeVolIteratorCheck( cD_testeasy , [1 , 0.000001] , 0.1 , 0.01)
+
+
 
