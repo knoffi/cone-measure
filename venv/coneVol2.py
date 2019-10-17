@@ -55,6 +55,17 @@ def coneVolIterator(coneData, point):
         result.append(x)
     return result
 
+def getConeVolIteratedVertices( cD , point ):
+    result = []
+    n = len(cD)
+
+    for i in range(n):
+        facet = cD[(i + 1) % n]
+        nextVertex([facet[0], facet[1]], facet[2], point)
+        touchedPoint = [ point [0] , point[1]]
+        result.append( touchedPoint )
+    return result
+
 def getConeVolIterator(coneData, point):
     result = []
     for x in point:
@@ -166,8 +177,24 @@ def diffGamma(coneData, params):
     return M.Matrix([d_0, d_1]).copyTrans()
 
 
-def phi(params,cD):
+def phi( params , cD ):
     return 1 * polyFunctional(cD, gamma(cD,params))
+
+def sigma( params , cD ):
+    n = len( cD )
+    point = gamma( cD , params )
+    touchedPoints = getConeVolIteratedVertices( cD , point )
+
+    result = M.dist( point , touchedPoints[ n-1 ]) ** 2
+
+    center = [ 0 , 0 ]
+    for point in touchedPoints:
+        center = M.addScaleVek( center , 1.0 / n, point )
+
+    result += M.norm( center )**2
+
+    return result
+
 
 # is this the correct gradient?
 def gradPhi(params,cD):

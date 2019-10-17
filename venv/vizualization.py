@@ -210,6 +210,7 @@ def vizNiveauGradOnGrid( size , stepSize , cD , param , grad , eps):
     mp.show()
 
 def vizLowGrad( cD , n , first_bound, second_bound , third_bound):
+
     grid = pS.getGrid(n)
     x_1 = []
     y_1 = []
@@ -251,18 +252,95 @@ def vizLowGrad( cD , n , first_bound, second_bound , third_bound):
     # print(vertices)
     mp.show()
 
+def vizConeDataParamFunction(size, stepSize, function , cD, param, value_1, value_2, value_3):
+
+    grid = []
+    n = math.floor(size * 1.0 / stepSize)
+    for i in range(n):
+        for j in range(n):
+            grid.append([i * stepSize - size / 2.0 + param[0], j * stepSize - size / 2.0 + param[1]])
+    print('grid ist fertig')
+    min = math.inf
+    point_min = param
+    x_1 = []
+    y_1 = []
+    x_2 = []
+    y_2 = []
+    x_3 = []
+    y_3 = []
+    x_4 = []
+    y_4 = []
+    for point in grid:
+        while (True):
+            try:
+                value = function(point, cD)
+
+                if value < min:
+                    point_min = point
+                    min = value
+                if value < value_1:
+                    x_1.append(point[0])
+                    y_1.append([point[1]])
+                else:
+                    if value < value_2:
+                        x_2.append(point[0])
+                        y_2.append([point[1]])
+                    else:
+                        if value < value_3:
+                            x_3.append(point[0])
+                            y_3.append([point[1]])
+                        else:
+                            x_4.append(point[0])
+                            y_4.append(point[1])
+
+                break
+            except ZeroDivisionError:
+                break
+
+    a_x = param[0] - size / 2.0
+    b_x = param[0] + size / 2.0 + 5
+
+    a_y = param[1] - size / 2.0
+    b_y = param[1] + size / 2.0 + 5
+
+    mp.plot(x_1, y_1, 'go')
+    mp.plot(x_2, y_2, 'yo')
+    mp.plot(x_3, y_3, 'ro')
+    mp.plot(x_4, y_4, 'bo')
+    mp.plot([param[0]], [param[1]], 'wo')
+    print( [ a_x , b_x , a_y , b_y ])
+    mp.axes([a_x, b_x, a_y, b_y])
+
+    print('here comes minimal point, gamma , value, gradient:')
+    print( point_min )
+    print( cV.gamma( cD , point_min ))
+    print( cV.phi( point_min , cD ))
+    #print( cV.gradPhi( point_min , cD))
+
+    mp.show()
+
+
 # besser kontrollierbaren Grid-Maker schreiben
 
 
 #polygon_ohShit = [[0.9440772944478957, -0.5997771631098889], [-16.804067260622325, -40.38884325863358], [-17.999708289662934, -10.829240656802343], [-32.34730498625317, 88.7483757416121]]
 #pT.plotPoly( polygon_ohShit , 'r')
-#polygon_test = [[2.673368179682499, 3.09152986544487], [1.2086453601351808, 4.28111986768648], [-1.1761317014903958, -0.022433820601322707], [-3.4952312190856785, -4.881491593765966], [0.789349380758395, -2.4687243187640626]]
-#pT.plotPoly( polygon_test , 'r')
+polygon_test = [[2.673368179682499, 3.09152986544487], [1.2086453601351808, 4.28111986768648], [-1.1761317014903958, -0.022433820601322707], [-3.4952312190856785, -4.881491593765966], [0.789349380758395, -2.4687243187640626]]
+pT.plotPoly( polygon_test , 'r')
 
 #print( polygon_test )
-#cD_test = cV.getConeVol( polygon_test )#[ [ 1 , 0 , 1  ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
+cD_test = cV.getConeVol( polygon_test )#[ [ 1 , 0 , 1  ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
 
 #vizLowValue( cD_test , 10 , 1 , 10 , 100)
 #vizLowGrad( cD_test , 10 , 2 , 1 , 1)
 
-#visiualizeLowValueOnGrid( 1 , 0.01 , cD_test , [4.3575, 1.6424999999999996] , 0.001 , 0.01 , 0.1)
+def test( params , cD ):
+    return cV.sigma( params , cD ) - cV.phi( params , cD )
+
+vizConeDataParamFunction( 100 , 1 , cV.phi , cD_test , [ 50 , 50 ] , 1 , 100 , 10000 )
+vizConeDataParamFunction( 100 , 1 , cV.sigma , cD_test , [ 50 , 50 ] , 1 , 100 , 10000 )
+vizConeDataParamFunction( 100 , 1 , test , cD_test , [ 50 , 50 ] , -10 , -0.5 , -0.1 )
+
+
+# Interessant: bei polygon_test = [[2.673368179682499, 3.09152986544487], [1.2086453601351808, 4.28111986768648], [-1.1761317014903958, -0.022433820601322707], [-3.4952312190856785, -4.881491593765966], [0.789349380758395, -2.4687243187640626]]
+# gibt es den Punkt = [0.0, 63.0] ? bei dem gradPhi eine Singularität hat, obwohl phi keine Singularität hat ! Wegen Numerik?

@@ -198,7 +198,7 @@ convexRun_eps = test_eps
 test_repeats= 10000
 test_verticeNumber = 7
 #makeEdgeNumberTest( test_repeats , test_verticeNumber )
-print(makeTest(5))
+#print(makeTest(5))
 
 test = [ [ 8 , 1 ] , [ 8 , 8 ] , [ 0 , 2 ] , [ -2 , -2 ] ]
 
