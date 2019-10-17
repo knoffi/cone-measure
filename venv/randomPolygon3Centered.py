@@ -7,6 +7,11 @@ import matrix as M
 import matplotlib.pyplot as mp
 import machEps as mE
 
+eps_max = 4096 * mE.getMachEps()
+eps_min = 4096 * mE.getMachEps()
+
+generalMaxRadiusBound = 50
+
 def getRandomPolygon(number):
     polarResult = getRandomNoncenteredPolarPolygon(number)
     result = getCartesian( polarResult )
@@ -100,6 +105,7 @@ def getCartesian( vertices ):
         result.append( polar( v[0] , v[1] ) )
     return result
 
+# seems to work well, was tested in polygonTest...
 def makeCentered( vertices ):
 
     center = [ 0 , 0 ]
@@ -113,9 +119,7 @@ def makeCentered( vertices ):
         vertices[ i ] = M.addVek( vertices[ i ] , center )
         i = i + 1
 
-# test = [ [ 1 , 1 ] , [ 0 , 0 ] , [ 0 , 1 ] , [ 1 , 0 ] ]
 
-# makeCentered( test )
 
 # better distribution: do not set angle of first point as 0
 def orderedPolarInsertion( polarVertices , angle ):
@@ -126,8 +130,8 @@ def orderedPolarInsertion( polarVertices , angle ):
     right1 = neighbours[2]
     right2 = neighbours[3]
 
-    max = maxRadius( [ left2, left1 , right1 , right2 ] , angle )
-    min = minRadius( left1, right1 , angle )
+    max = maxRadius( [ left2, left1 , right1 , right2 ] , angle ) - eps_max
+    min = minRadius( left1, right1 , angle ) + eps_min
 
     if min > max:
         print('oh shit')
@@ -230,8 +234,10 @@ def randomAngles( n ):
 def randomRadius(min, max):
     #randomRadius will always be below 10 + min . Is that good?
     if( max == math.inf ):
-        return random.random() * ( 8 - min ) + min
-
+        if( min < generalMaxRadiusBound ):
+            return random.random() * ( generalMaxRadiusBound - min ) + min
+        else:
+            return random.random() *  min + min
     return min + ( max - min ) * random.random()
 
 def polar(angle, radius):
