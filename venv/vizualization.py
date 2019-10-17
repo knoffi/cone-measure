@@ -337,9 +337,9 @@ cD_test = cV.getConeVol( polygon_test )#[ [ 1 , 0 , 1  ] , [ 0 , 1 , 1 ] , [ -1 
 def test( params , cD ):
     return cV.sigma( params , cD ) - cV.phi( params , cD )
 
-vizConeDataParamFunction( 100 , 1 , cV.phi , cD_test , [ 50 , 50 ] , 1 , 100 , 10000 )
-vizConeDataParamFunction( 100 , 1 , cV.sigma , cD_test , [ 50 , 50 ] , 1 , 100 , 10000 )
-vizConeDataParamFunction( 100 , 1 , test , cD_test , [ 50 , 50 ] , -10 , -0.5 , -0.1 )
+vizConeDataParamFunction( 10 , 0.1 , cV.phi , cD_test , [ 5 , 5 ] , 1 , 100 , 10000 )
+vizConeDataParamFunction( 10 , 0.1 , cV.sigma , cD_test , [ 5 , 5 ] , 1 , 100 , 10000 )
+#vizConeDataParamFunction( 100 , 1 , test , cD_test , [ 50 , 50 ] , -10000 , -0.5 , -0.1 )
 
 
 # Interessant: bei polygon_test = [[2.673368179682499, 3.09152986544487], [1.2086453601351808, 4.28111986768648], [-1.1761317014903958, -0.022433820601322707], [-3.4952312190856785, -4.881491593765966], [0.789349380758395, -2.4687243187640626]]

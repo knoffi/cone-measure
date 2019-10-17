@@ -79,7 +79,7 @@ if M.dist(getConeVolIterator( cD_test , point_test ) , point_test ) > 0.00001 :
 
 # berechnet abstand zum quadrat
 def polyFunctional(coneData, point):
-    return M.norm(M.subVek(point, getConeVolIterator(coneData, point))) ** 2
+    return M.dist(point, getConeVolIterator(coneData, point)) ** 2
 
 if polyFunctional( cD_test , point_test ) > 0.0001:
     print( ' Fehler bei polyFunctional ')
@@ -185,13 +185,13 @@ def sigma( params , cD ):
     point = gamma( cD , params )
     touchedPoints = getConeVolIteratedVertices( cD , point )
 
-    result = M.dist( point , touchedPoints[ n-1 ]) ** 2
+    #result = M.dist( point , touchedPoints[ n-1 ]) ** 2
 
     center = [ 0 , 0 ]
     for point in touchedPoints:
         center = M.addScaleVek( center , 1.0 / n, point )
 
-    result += M.norm( center )**2
+    result = M.norm( center )**2 + phi( params , cD )
 
     return result
 
