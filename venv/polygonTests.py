@@ -25,22 +25,41 @@ def getPolyDomain(vertices):
             d = v[1]
     return [ a -1 , b +1  , c -1 , d +1 ]
 
-def plotPoly(vertices, colorString):
+def plotPoly(cartesianVertices, colorString):
     x=[]
     y=[]
 
-    for v in vertices:
+    for v in cartesianVertices:
         x.append(v[0])
         y.append(v[1])
     # make a line between last point and first point
-    x.append(vertices[0][0])
-    y.append(vertices[0][1])
+    x.append(cartesianVertices[0][0])
+    y.append(cartesianVertices[0][1])
     #x.append( 0 )
     #y.append( 0 )
     mp.plot( x , y , colorString + '--' )
     mp.plot( x , y , colorString + 'o' )
     mp.plot( 0 , 0 )
-    mp.axis(getPolyDomain(vertices))
+    mp.axis(getPolyDomain(cartesianVertices))
+    #print(vertices)
+    mp.show()
+
+def plotPolyInArea( cartesianVertices, colorString , lowBound_x , upBound_x , lowBound_y , upBound_y ):
+    x=[]
+    y=[]
+
+    for v in cartesianVertices:
+        x.append(v[0])
+        y.append(v[1])
+    # make a line between last point and first point
+    x.append(cartesianVertices[0][0])
+    y.append(cartesianVertices[0][1])
+    #x.append( 0 )
+    #y.append( 0 )
+    mp.plot( x , y , colorString + '--' )
+    mp.plot( x , y , colorString + 'o' )
+    mp.plot( 0 , 0 )
+    mp.axis([ lowBound_x , upBound_x , lowBound_y , upBound_y])
     #print(vertices)
     mp.show()
 
@@ -130,23 +149,30 @@ def isNotStrictlyLeft( u ,v_notLeft ):
 def makeTest( n ):
     rounds = 0
     wrongs = []
+    counting = [ 0 , 0 , 0 , 0 ]
     while rounds < test_repeats:
         P = rP.getRandomPolygon( n )
-        if not ( isConvex( P )) and isConvexRun( P ):
+        convexTest = isConvex( P )
+        convexRunTest = isConvexRun( P )
+        if not ( convexTest) and convexRunTest:
             print( 'okay')
-            plotPoly(P, 'b')
-        if isConvex( P ) and isConvexRun( P ):
-            # print('nice')
-            plotPoly(P, 'g')
-        if isConvex( P ) and not ( isConvexRun( P ) ):
+            #plotPoly(P, 'b')
+            counting[1] += 1
+        if convexTest and convexRunTest:
+            print('nice')
+            #plotPoly(P, 'g')
+            counting[0] += 1
+        if convexTest and not ( convexRunTest ):
             print( 'strange' )
-            plotPoly(P, 'y')
-        if not ( isConvex( P ) ) and not ( isConvexRun( P ) ):
+            #plotPoly(P, 'y')
+            counting[2] += 1
+        if not ( convexTest ) and not ( convexRunTest ):
             print( 'this is bad' )
             wrongs.append(P)
             plotPoly( P  , 'r')
+            counting[3] += 1
         rounds = rounds + 1
-    return wrongs
+    return counting
 
 def makeEdgeNumberTest( repeats , edgeNumber ):
     fail_less = 0
@@ -169,13 +195,19 @@ def makeEdgeNumberTest( repeats , edgeNumber ):
 # warum kriege ich so oft  benachbarte vertices mit fast gleichem Winkel (Zufall?) und (unnötig) fast gleichem Radius (Fehler bei minRadius, maxRadius) ?
 test_eps = mE.getMachEps()
 convexRun_eps = test_eps
-test_repeats= 20
+test_repeats= 10000
 test_verticeNumber = 7
-makeEdgeNumberTest( test_repeats , test_verticeNumber )
-#print(makeTest(6))
+#makeEdgeNumberTest( test_repeats , test_verticeNumber )
+print(makeTest(5))
 
-support_test = [ [ 0 , 1] , [ 0.5 * math.pi , 1 ] , [ 1.5 * math.pi , 1 ] ]
+test = [ [ 8 , 1 ] , [ 8 , 8 ] , [ 0 , 2 ] , [ -2 , -2 ] ]
 
-u = [ 1 , 1 ]
+#rP.makeCentered( test )
 
-print( rP.supportFunction( support_test , u ) - 0.5 )
+#plotPoly( test , 'b')
+
+#support_test = [ [ 0 , 1] , [ 0.5 * math.pi , 1 ] , [ 1.5 * math.pi , 1 ] ]
+
+#u = [ 1 , 1 ]
+
+#print( rP.supportFunction( support_test , u ) - 0.5 )
