@@ -410,3 +410,73 @@ def lineSolution( cD , params ):
 #print( cV.phi( result_test , cD_test ))
 #print( cV.phi( [ 1 , 1 ] , cD_test ))
 # gthe problem is: low points will come far away which will not lead to a minimum... so I shoudl better search behind the posGrad points...
+
+
+def getMinOnGrid( grid , f , cD ):
+    result = [ -1 ,  -1 ]
+    value_result = math.inf
+
+    for point in grid:
+        while(True):
+            try:
+                value_point = f( point, cD )
+                if value_point < value_result:
+                    value_result = value_point
+                    result[0] = point[0]
+                    result[1] = point[1]
+                break
+            except ZeroDivisionError:
+                break
+    return [ result , value_result ]
+
+def getQuadraticGrid( size, stepSize , midPoint):
+    grid = []
+    n = math.floor(size * 1.0 / stepSize)
+    for i in range(n):
+        for j in range(n):
+            point = [i * stepSize - size / 2.0 + midPoint[0], j * stepSize - size / 2.0 + midPoint[1]]
+            if point[0] >= 0 and point[1] >= 0:
+                grid.append( point )
+
+    return grid
+
+def quadraticMinSearcher( f , cD , upperBound ):
+    size = 1000
+    stepSize = size / 100.0
+    midPoint = [ size / 2.0 , size / 2.0 ]
+    grid = getQuadraticGrid( size , stepSize , midPoint )
+    minData = getMinOnGrid( grid , f , cD )
+    result = minData[0]
+    value_result = minData[1]
+
+    while( value_result > upperBound ):
+        size = size / 2
+        if( size + 128 == 128 ):
+            break
+        stepSize = size / 100.0
+        midPoint = result
+        grid = getQuadraticGrid(size, stepSize, midPoint)
+        minData = getMinOnGrid(grid, f, cD)
+        result = minData[0]
+        value_result = minData[1]
+        print(result)
+    return [ result , value_result ]
+
+
+P_hardTest = rP.getRandomPolygon( 5 )
+cD_hardTest = cV.getConeVol( P_hardTest )
+print( 'here comes the polygon:')
+print( P_hardTest )
+print( ' here comes minData of phi with gamma point : ')
+minData_phi = quadraticMinSearcher( cV.phi , cD_hardTest , 0.001 )
+print( minData_phi )
+print( cV.gamma( cD_hardTest , minData_phi[0] ) )
+print( ' here comes minData of sigma with gamma point : ')
+minData_sigma = quadraticMinSearcher( cV.sigma , cD_hardTest , 0.0000001 )
+print( minData_sigma )
+print( cV.gamma( cD_hardTest , minData_sigma[0] ) )
+
+
+
+
+
