@@ -281,22 +281,22 @@ def coneVoliteratorTest ( cD , firstPointOfPolygon , eps):
 #gradPolyFunctionalTest_random( 1 , 5 , 0.1 , 0.000000000001  , 0.0001 , True )
 #polyFunctionalTest( 20 , 5 , 0.000001 )
 
-polygons_test = [
-    [[9.203330824769969, 5.091434487244416], [-5.6003542709433995, 2.0960543313403526], [-2.469763362739936, -1.9552999854419217], [-1.689083779038116, -2.2524032885794893], [0.5558705879514816, -2.979785544563356]]
-]
-cD_test = cV.getConeVol(polygons_test[0])
-points_test = [ [9.202238149608856, 5.089797764821817] ]
+#polygons_test = [
+#    [[9.203330824769969, 5.091434487244416], [-5.6003542709433995, 2.0960543313403526], [-2.469763362739936, -1.9552999854419217], [-1.689083779038116, -2.2524032885794893], [0.5558705879514816, -2.979785544563356]]
+#]
+#cD_test = cV.getConeVol(polygons_test[0])
+#points_test = [ [9.202238149608856, 5.089797764821817] ]
 
-polygon_easy = [ [ 1, 0 ] , [ 0 , 1 ] , [ -1 , 0 ] , [ 0 , -1 ] ]
-cD_testeasy = cV.getConeVol(polygon_easy)
-point_testeasy = [ 1 , 1.001 ]
+#polygon_easy = [ [ 1, 0 ] , [ 0 , 1 ] , [ -1 , 0 ] , [ 0 , -1 ] ]
+#cD_testeasy = cV.getConeVol(polygon_easy)
+#point_testeasy = [ 1 , 1.001 ]
 
 #pT.plotPoly( polygons_test[0] , 'r')
 #gradPolyFunctionalTest_array( polygons_test , points_test , 0.1 , 0.0001 )
-cD_test = cV.getConeVol( polygons_test[0])
+#cD_test = cV.getConeVol( polygons_test[0])
 # print( cV.getConeVolIterator( cD_testeasy , point_testeasy ))
 #coneVoliteratorTest( cD_testeasy , [ 1 , 1.001 ] , 0.1)
-hMethodConeVolIteratorCheck( cD_testeasy , [1 , 0.000001] , 0.1 , 0.01)
+#hMethodConeVolIteratorCheck( cD_testeasy , [1 , 0.000001] , 0.1 , 0.01)
 
 
 
