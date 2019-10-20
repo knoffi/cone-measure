@@ -54,7 +54,7 @@ def coneVolIterator(coneData, point):
     for x in point:
         result.append(x)
     return result
-
+# where does it start?
 def getConeVolIteratedVertices( cD , point ):
     result = []
     n = len(cD)
