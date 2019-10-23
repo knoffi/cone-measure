@@ -189,6 +189,15 @@ def makeEdgeNumberTest( repeats , edgeNumber ):
     #print(fail_more)
 
 
+dist = 1.0 / 2.0
+P_test = [ [ 2 , 5 ] , [ 0 , 5 ] , [ 0 , -3  ] , [ 2 , -3 ] ]
+
+rP.makeCentered( P_test )
+
+
+
+
+
 
 # eventuell wird ein tester besser, wenn ich die polarkoordinaten nicht komplett umwandle
 # HIER SOLLTE ALS NÄCHSTES GEARBEITET WERDEN; UM TESTER ZU VERBESSERN ::: WELCHE SIND DIE SINNVOLLEN EPSILONS FÜR DIE TEST-SCHRANKENß SOLLTE MAN SCHNELL MAL MACHINE EPSILON ZUVOR BERECHNEN? UND KONDITIONIEREUNG BESTIMMEN?

@@ -107,18 +107,29 @@ def getCartesian( vertices ):
 
 # seems to work well, was tested in polygonTest...
 def makeCentered( vertices ):
+    P = vertices
+    x = 0
+    y = 0
+    n = len(P)
+    volume = 0
 
-    center = [ 0 , 0 ]
-    i=0
+    for i in range(n):
+        p = P[i]
+        q = P[(i + 1) % n]
 
-    for v in vertices:
-        center = M.subVek( center , v )
-    center = M.scaleVek( 1 / len(vertices) , center )
+        determinante = (p[0] * q[1] - q[0] * p[1])
 
-    while i < len(vertices):
-        vertices[ i ] = M.addVek( vertices[ i ] , center )
-        i = i + 1
+        x += (p[0] + q[0]) * determinante
+        y += (p[1] + q[1]) * determinante
+        volume += 0.5 * determinante
 
+    x = x / ( 6.0 * volume )
+    y = y / ( 6.0 * volume )
+    center = [ x , y ]
+
+    for point in vertices:
+        point[0] = point[0] - x
+        point[1] = point[1] - y
 
 
 # better distribution: do not set angle of first point as 0
@@ -324,13 +335,13 @@ pi = math.pi
 
 Quadrat_polar = [ [ pi / 4 , dist ] , [ 3*pi/4 , dist] , [ 5*pi/4 , dist ] , [  7*pi / 4 , dist ] ]
 Diamond_polar = [ [ pi / 2 , 1 ] , [ pi , 1 ] , [ 3 * pi / 2 , 1 ] , [ 0 , 1 ] ]
-Quadrat = rP.getCartesian( Quadrat_polar )
-Diamond = rP.getCartesian( Diamond_polar )
+Quadrat = getCartesian( Quadrat_polar )
+Diamond = getCartesian( Diamond_polar )
 
-u_1 = [ 1 , 0 ]
-if ( math.fabs( rP.supportFunction( Diamond_polar , u ) - 1 ) > 0.00000001  ):
+u = [ 1 , 0 ]
+if ( math.fabs( supportFunction( Diamond_polar , u ) - 1 ) > 0.00000001  ):
     print( ' Fehler bei support function test ')
-if ( math.fabs( rP.supportFunction( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
+if ( math.fabs( supportFunction( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
     print( ' Fehler bei support function test ')
 
 v=[0,1]
