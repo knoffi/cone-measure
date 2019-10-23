@@ -89,7 +89,7 @@ def logMinAutoTest( repeats ):
         n = n+1
         print('done')
 
-logMinAutoTest( 20 )
+#logMinAutoTest( 20 )
 
 # mögliche Fehler: h wird negativ (support Function), coneVolume wird negativ, u hat norm null... solche Dinge.
 

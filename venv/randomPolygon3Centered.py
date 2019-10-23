@@ -318,6 +318,21 @@ def getMin(v,w,angle):
 # neighbours = getNeighbours( test , 0.5 * math.pi )
 # print( maxRadius( neighbours , 0.5 * math.pi ) )
 
+
+dist = math.sqrt(2)
+pi = math.pi
+
+Quadrat_polar = [ [ pi / 4 , dist ] , [ 3*pi/4 , dist] , [ 5*pi/4 , dist ] , [  7*pi / 4 , dist ] ]
+Diamond_polar = [ [ pi / 2 , 1 ] , [ pi , 1 ] , [ 3 * pi / 2 , 1 ] , [ 0 , 1 ] ]
+Quadrat = rP.getCartesian( Quadrat_polar )
+Diamond = rP.getCartesian( Diamond_polar )
+
+u_1 = [ 1 , 0 ]
+if ( math.fabs( rP.supportFunction( Diamond_polar , u ) - 1 ) > 0.00000001  ):
+    print( ' Fehler bei support function test ')
+if ( math.fabs( rP.supportFunction( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
+    print( ' Fehler bei support function test ')
+
 v=[0,1]
 w=[1,0]
 angle= math.pi/4
