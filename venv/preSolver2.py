@@ -472,6 +472,7 @@ def quadraticMinSearcherTest( repeats ):
     eps = 0.00001
     fails = 0
     while repeats > 0:
+        print( repeats )
         repeats -= 1
         P = rP.getRandomPolygon( 5 )
         cD = cV.getConeVol( P )
@@ -486,14 +487,15 @@ def quadraticMinSearcherTest( repeats ):
                 fails += 1
                 break
             else:
-                print('quadratic searcher failed by')
+                print('quadratic searcher failed by by')
+                print( cV.sigma( result , cD ) )
                 print(P)
                 print(result)
                 print(cV.gamma(cD, result))
                 fails += 1
     return fails
 
-print( quadraticMinSearcherTest( 30 ))
+print( quadraticMinSearcherTest( 0 ) )
 
 def nonCenteredCleverLowValue( cD ):
     return True
