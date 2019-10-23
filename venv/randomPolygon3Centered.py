@@ -10,7 +10,7 @@ import machEps as mE
 eps_max = 4096 * mE.getMachEps()
 eps_min = 4096 * mE.getMachEps()
 
-generalMaxRadiusBound = 5
+generalMaxRadiusBound = 1
 
 def getRandomPolygon(number):
     polarResult = getRandomNoncenteredPolarPolygon(number)
