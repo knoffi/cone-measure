@@ -107,6 +107,15 @@ def getCartesian( vertices ):
 
 # seems to work well, was tested in polygonTest...
 def makeCentered( vertices ):
+
+    center = getCenter(vertices)
+
+    for point in vertices:
+        point[0] = point[0] - center[0]
+        point[1] = point[1] - center[1]
+
+def getCenter( vertices ):
+
     P = vertices
     x = 0
     y = 0
@@ -126,10 +135,7 @@ def makeCentered( vertices ):
     x = x / ( 6.0 * volume )
     y = y / ( 6.0 * volume )
     center = [ x , y ]
-
-    for point in vertices:
-        point[0] = point[0] - x
-        point[1] = point[1] - y
+    return center
 
 
 # better distribution: do not set angle of first point as 0
@@ -328,26 +334,6 @@ def getMin(v,w,angle):
 # test = [ [ 0 , 2 ] , [ 0.25 * math.pi , 1.42  ] , [ 0.75 * math.pi , 1.42 ] , [ 1 * math.pi , 2 ] ]
 # neighbours = getNeighbours( test , 0.5 * math.pi )
 # print( maxRadius( neighbours , 0.5 * math.pi ) )
-
-
-dist = math.sqrt(2)
-pi = math.pi
-
-Quadrat_polar = [ [ pi / 4 , dist ] , [ 3*pi/4 , dist] , [ 5*pi/4 , dist ] , [  7*pi / 4 , dist ] ]
-Diamond_polar = [ [ pi / 2 , 1 ] , [ pi , 1 ] , [ 3 * pi / 2 , 1 ] , [ 0 , 1 ] ]
-Quadrat = getCartesian( Quadrat_polar )
-Diamond = getCartesian( Diamond_polar )
-
-u = [ 1 , 0 ]
-if ( math.fabs( supportFunction( Diamond_polar , u ) - 1 ) > 0.00000001  ):
-    print( ' Fehler bei support function test ')
-if ( math.fabs( supportFunction( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
-    print( ' Fehler bei support function test ')
-
-v=[0,1]
-w=[1,0]
-angle= math.pi/4
-vertices=[ [ 1, 0 ],  [ 0 , -1 ] , [ -1 , 0 ] ]
 # ein result mit zwei gleichen Punkten: [[1.3506563545534096, 0.0], [1.8164857151592047, 0.0], [1.3506563545534096, 0.0], [1.4946652011162949, 0.0]]
 #P = getRandomOriginPolarTriangle()
 # - minRadius testen und einbauen in getNextPoint von getRandomPolygon()

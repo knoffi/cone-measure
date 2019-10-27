@@ -211,6 +211,42 @@ test_verticeNumber = 7
 
 test = [ [ 8 , 1 ] , [ 8 , 8 ] , [ 0 , 2 ] , [ -2 , -2 ] ]
 
+
+dist = math.sqrt(2)
+pi = math.pi
+
+Quadrat_polar = [ [ pi / 4 , dist ] , [ 3*pi/4 , dist] , [ 5*pi/4 , dist ] , [  7*pi / 4 , dist ] ]
+Diamond_polar = [ [ pi / 2 , 1 ] , [ pi , 1 ] , [ 3 * pi / 2 , 1 ] , [ 0 , 1 ] ]
+Quadrat = rP.getCartesian( Quadrat_polar )
+Diamond = rP.getCartesian( Diamond_polar )
+
+u = [ 1 , 0 ]
+
+if ( math.fabs( rP.supportFunction( Diamond_polar , u ) - 1 ) > 0.00000001  ):
+    print( ' Fehler bei support function test ')
+if ( math.fabs( rP.supportFunction( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
+    print( ' Fehler bei support function test ')
+
+Trapez = [  [ 1 , 1] , [ 0 , 1] , [-3 , - 1] , [ 0 , -1 ]]
+
+a = Trapez[3][0] - Trapez[2][0]
+b = Trapez[0][0] - Trapez[1][0]
+h = Trapez[1][1] - Trapez[2][1]
+e = Trapez[0][0] - Trapez[2][0]
+
+center = rP.getCenter(Trapez)
+# center form wikipedia formula for center of trapez
+center2 = [ (a**2 - b**2 + e * ( a + 2.0 * b ) ) / ( 3.0 * ( a + b ) ) + Trapez[2][0] , h * ( a + 2.0 * b ) / ( 3.0 * ( a + b ) ) + Trapez[2][1]]
+if M.dist( center, center2) > 0.00001:
+    print('fehler bei getCenter for trapez')
+    print( center )
+    print( center2 )
+    print(a)
+    print(b)
+    print(h)
+    print(e)
+    plotPoly( Trapez , 'r')
+
 #rP.makeCentered( test )
 
 #plotPoly( test , 'b')
