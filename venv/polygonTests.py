@@ -220,14 +220,23 @@ Diamond_polar = [ [ pi / 2 , 1 ] , [ pi , 1 ] , [ 3 * pi / 2 , 1 ] , [ 0 , 1 ] ]
 Quadrat = rP.getCartesian( Quadrat_polar )
 Diamond = rP.getCartesian( Diamond_polar )
 
-u = [ 1 , 0 ]
+u = [ -1 , 0 ]
 
-if ( math.fabs( rP.supportFunction( Diamond_polar , u ) - 1 ) > 0.00000001  ):
+if ( math.fabs( rP.supportFunctionPolar( Diamond_polar , u ) - 1 ) > 0.00000001  ):
     print( ' Fehler bei support function test ')
-if ( math.fabs( rP.supportFunction( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
+if ( math.fabs( rP.supportFunctionPolar( Quadrat_polar , u ) - 1 ) > 0.00000001  ):
     print( ' Fehler bei support function test ')
+#alpha = rP.supportFunctionCartesianCentered( Diamond, u )
+#if math.fabs( alpha - 1 ) > 0.00000001  :
+#    print( ' Fehler bei supportCartesianCentered function test ')
+#    print(alpha)
+beta = rP.supportFunctionCartesianCentered( Quadrat , u )
+if math.fabs( beta - 1 ) > 0.00000001  :
+    print( ' Fehler bei supportCartesianCentered function test ')
+    print(beta)
+plotPoly( Quadrat , 'r' )
 
-Trapez = [  [ 1 , 1] , [ 0 , 1] , [-3 , - 1] , [ 0 , -1 ]]
+Trapez = [  [ 1 , 1] , [ 0 , 1] , [-3 , - 1] , [ 0 , -1 ] ]
 
 a = Trapez[3][0] - Trapez[2][0]
 b = Trapez[0][0] - Trapez[1][0]

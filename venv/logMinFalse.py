@@ -1,6 +1,8 @@
 import polygonTests as pT
 import randomPolygon3Centered as rP
 import math
+import logMin
+import matrix as M
 
 K = [[0.16640928450586043, 0.28917418677397777], [0.15101525081218548, 0.3064079753306511], [-0.2290524848905303, 0.683903928674077], [-0.3604141149725954, 0.7581738202489986], [-0.847415312840231, 0.3481652448661193], [-0.328913051451769, -0.6175664684642002], [-0.06965097663602743, -0.5785376713775047], [0.053503470369221845, -0.511176773056158], [0.3277790235573622, -0.2924005917258763], [0.3449859309091141, -0.2713847772475397], [0.3973534601888786, -0.06595397944732861], [0.3943995204485307, -0.04880489457521678]]
 L = [[-0.20084726556302288, 0.5038871568097026], [-1.1634528166966214, -0.40039248009544], [1.364300082259644, -0.10349467671426259]]
@@ -24,10 +26,24 @@ Q_3 = [[2.702509047952883, 2.4667534689635926], [3.2801824296865525, 1.060701829
 
 #sollte tester für polytop-eigenschaft benutzen
 
-pT.plotPoly( K_3 , 'r' )
-pT.plotPoly( L_3 , 'g')
-print( pT.isConvex( K_3 ))
-print( pT.isConvexRun( K_3 ))
-print( pT.isConvex( L_3 ))
-print( pT.isConvexRun( L_3 ))
+#pT.plotPoly( K_2 , 'g' )
+#pT.plotPoly( L_2 , 'g')
+#pT.plotPoly( rP.getCartesian(P_2) , 'g')
+#pT.plotPoly( rP.getCartesian(Q_2) , 'g')
+#print( pT.isConvex( K_3 ))
+#print( pT.isConvexRun( K_3 ))
+#print( pT.isConvex( L_3 ))
+#print( pT.isConvexRun( L_3 ))
+#print( rP.getCenter(K_2))
+#print( rP.getCenter(L_2))
+#print( logMin.logMinTest( P_2 , Q_2 ) )
+test_1 = rP.getCartesian(P_2)
+test_2 = rP.getCartesian(rP.getPolar( rP.getCartesian( P_2 )))
+sum = 0
+for i in range( len( test_1 ) ) :
+    sum += M.dist( test_1[ i - 1 ] , test_2[ i - 2 ] )
+
+print(sum)
+pT.plotPoly( test_1 , 'r' )
+pT.plotPoly( test_2 , 'g')
 

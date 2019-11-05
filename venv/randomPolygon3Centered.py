@@ -105,6 +105,12 @@ def getCartesian( vertices ):
         result.append( polar( v[0] , v[1] ) )
     return result
 
+def getPolar( vertices_polar ):
+    result = [ ]
+    for v in vertices_polar:
+        result.append( reversePolar( v[0] , v[1] ) )
+    return result
+
 # seems to work well, was tested in polygonTest...
 def makeCentered( vertices ):
 
@@ -198,8 +204,40 @@ def getAngle(point):
 
 
 # can be improved if ' u ' is already in polar coordinates
-def supportFunction( K_polar , u ):
+def supportFunctionPolar( K_polar , u ):
     angle = getAngle( u )
+    neighbours = getPolarNeighbours( K_polar , angle )
+    v = getCartesian([neighbours[1]])[0]
+    w = getCartesian([neighbours[2]])[0]
+    h_tilde = getMin( v , w , angle)
+    divisor = M.norm(u)
+    if divisor == 0:
+        print('warum ist u als Normalenvektor so klein?')
+        print( u )
+        return h_tilde / mE.getMachEps()
+    return h_tilde / M.norm(u)
+
+# can be improved if ' u ' is already in polar coordinates
+def supportFunctionCartesianCentered( K_cartesianCentered , u ):
+    if math.fabs( M.norm( u ) - 1 ) > 0.0001:
+        print( ' u is not normed for support function, result needs to be divided by norm ')
+        return []
+    P = K_cartesianCentered
+    n = len(P)
+    result = math.inf
+
+    for i in range(n):
+        scaling = getMinForSupport( P[ i % ( n - 1 )] , P[ i-1 ] , u )
+        print(scaling)
+        if scaling > 0 and scaling < result:
+            result = scaling
+
+    return result
+
+
+
+    for i in range( n ):
+        result = getMaxVector( )
     neighbours = getPolarNeighbours( K_polar , angle )
     v = getCartesian([neighbours[1]])[0]
     w = getCartesian([neighbours[2]])[0]
@@ -256,6 +294,13 @@ def randomRadius(min, max):
         else:
             return random.random() *  min + min
     return min + ( max - min ) * random.random()
+
+def reversePolar( x_koord , y_koord ):
+
+    angle = getAngle( [ x_koord , y_koord ])
+    r = math.sqrt( x_koord *+2  + y_koord ** 2 )
+
+    return [ angle , r ]
 
 def polar(angle, radius):
     x= radius * math.cos(angle)
@@ -317,6 +362,20 @@ def getMax(v,w,angle):
     if( result[0] <= 0 ):
         return math.inf
     return result[0]
+
+def getMinForSupport( v , w , u ):
+    u_1 = u
+    u_2 = M.subVek(v,w)
+    #print(u_1)
+    U= M.Matrix([u_1,u_2]).copyTrans()
+    #U.list()
+    result=U.lgsSolve(v)
+    # my lgsSolver returns a 'solution' even if v is not in im(M) . Therefore the if-check needs to get adjusted
+    if( M.dist( U.image(result) , v ) > 0.0001 ):
+        return -math.inf
+    return result[0]
+
+
 
 def getMin(v,w,angle):
     u_1 = polar(angle,1)
