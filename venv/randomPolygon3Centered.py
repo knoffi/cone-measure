@@ -32,6 +32,13 @@ def getRandomNoncenteredPolarPolygon(m):
         steps = steps + 1
     return polarResult
 
+def getVolume( orderedPolygon ):
+    coneVolume = cV.getConeVol(orderedPolygon)
+    volume = 0
+    for data in coneVolume:
+        volume = volume + data[2]
+    return volume
+
 def makeUnitVolume( orderedPolytop ):
     coneVolume = cV.getConeVol( orderedPolytop )
     volume = 0
@@ -227,8 +234,7 @@ def supportFunctionCartesianCentered( K_cartesianCentered , u ):
     result = math.inf
 
     for i in range(n):
-        scaling = getMinForSupport( P[ i % ( n - 1 )] , P[ i-1 ] , u )
-        print(scaling)
+        scaling = getMinForSupport( P[ i % n] , P[ i-1 ] , u )
         if scaling > 0 and scaling < result:
             result = scaling
 

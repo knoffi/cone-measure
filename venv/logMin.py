@@ -24,9 +24,9 @@ import random as rd
 
 
 
-def logMinTest( orderedPolarPolygon_1 , orderedPolarPolygon_2 ):
-    K = rP.getCartesian(orderedPolarPolygon_1)
-    L = rP.getCartesian(orderedPolarPolygon_2)
+def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 ):
+    K = orderedCartPolygon_1
+    L = orderedCartPolygon_2
     rP.makeCentered(K)
     rP.makeCentered(L)
     rP.makeUnitVolume(K)
@@ -42,8 +42,11 @@ def logMinTest( orderedPolarPolygon_1 , orderedPolarPolygon_2 ):
     for i in range( len( K ) ):
         # Reihenfolge der Normalenvektoren sollte jetzt egal sein
         u = [ coneVol[i-1][0] , coneVol[i-1][1] ]
-        quotient = rP.supportFunction( orderedPolarPolygon_2 , u ) / rP.supportFunction( orderedPolarPolygon_1 , u )
+        h_1 = rP.supportFunctionCartesianCentered( L , u )
+        h_2 = rP.supportFunctionCartesianCentered( K , u )
+        quotient = h_1 / h_2
         if quotient == 0:
+            print( 'quotient von logMin war gleich 0...')
             print( u )
             print( L[ i-1 ])
             print( K[ i-1 ])
@@ -53,7 +56,7 @@ def logMinTest( orderedPolarPolygon_1 , orderedPolarPolygon_2 ):
         if quotient >= 0:
             prod = prod * math.pow( quotient , coneVol[ i - 1 ][ 2 ] )
         else:
-            print( ' bang' )
+            print( ' quotient von logMin war negativ' )
             print( u )
             print( coneVol[ i - 1][2] )
             pT.plotPoly( K , 'r')
@@ -61,9 +64,9 @@ def logMinTest( orderedPolarPolygon_1 , orderedPolarPolygon_2 ):
     if prod >= 1:
         return True
     else:
-        print(K)
-        print(L)
-        print( 1 - prod)
+        pT.plotPoly( K , 'r')
+        pT.plotPoly( L , 'g')
+        #print( 1 - prod)
         return False
 
 #quotients = [ 0.05260231151731214,
@@ -84,16 +87,20 @@ def logMinAutoTest( repeats ):
     while n < repeats:
         P = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
         Q = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
-
-        if not logMinTest( P , Q ):
-            print( P )
-            print( Q )
-            print( 'oh shit' )
-            print( 'sollte tester für polytop-eigenschaft benutzen' )
+        K = rP.getCartesian( P )
+        L = rP.getCartesian( Q )
+        if not logMinTest( K , L ):
+            if pT.isConvex(K) and  pT.isConvex(L) and pT.isConvexRun(K) and  pT.isConvexRun(L):
+                if M.norm(rP.getCenter(K)) +  M.norm( rP.getCenter(L) ) < 0.0000001:
+                    if math.fabs( rP.getVolume(K) + rP.getVolume(L) - 2 ) < 0.0000001:
+                        print( 'logMin Gegenbeispiel' )
+                        print( K )
+                        print( L )
+                        break
         n = n+1
         print('done')
 
-#logMinAutoTest( 100 )
+logMinAutoTest( 1000 )
 
 # mögliche Fehler: h wird negativ (support Function), coneVolume wird negativ, u hat norm null... solche Dinge.
 
