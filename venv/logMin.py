@@ -64,9 +64,9 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 ):
     if prod >= 1:
         return True
     else:
-        pT.plotPoly( K , 'r')
-        pT.plotPoly( L , 'g')
-        print( 1 - prod)
+        #pT.plotPoly( K , 'r')
+        #pT.plotPoly( L , 'g')
+        #print( 1 - prod)
         return False
 
 #quotients = [ 0.05260231151731214,
@@ -84,21 +84,35 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 ):
 
 def logMinAutoTest( repeats ):
     n = 0
+    logMinTrue = 0
+    logMinFalse = 0
+    logMinTriangleFalse = 0
     while n < repeats:
         P = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
         Q = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
         K = rP.getCartesian( P )
         L = rP.getCartesian( Q )
         if not logMinTest( K , L ):
+
             if pT.isConvex(K) and  pT.isConvex(L) and pT.isConvexRun(K) and  pT.isConvexRun(L):
                 if M.norm(rP.getCenter(K)) +  M.norm( rP.getCenter(L) ) < 0.0000001:
-                    if math.fabs( rP.getVolume(K) + rP.getVolume(L) - 2 ) < 0.0000001:
-                        print( 'logMin Gegenbeispiel' )
-                        print( K )
-                        print( L )
-                        break
+                    if math.fabs( rP.getVolume(K) - 1 ) + math.fabs( rP.getVolume(L) - 1 ) < 0.0000001:
+                        if len(K) == 3 or len(L) == 3:
+                            #print( 'das darf nicht sein')
+                            #print(K)
+                            #print(L)
+                            logMinTriangleFalse += 1
+                        else:
+                            #print( 'logMin Gegenbeispiel' )
+                            #print( K )
+                            #print( L )
+                            logMinFalse += 1
+        else:
+            logMinTrue += 1
+
         n = n+1
-        print('done')
+    print('done')
+    print( [ logMinTrue , logMinFalse , logMinTriangleFalse ] )
 
 logMinAutoTest( 1000 )
 

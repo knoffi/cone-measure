@@ -48,8 +48,8 @@ L_schoen = [[0.7377712930371347, 0.09097747366828057], [-1.704980480934132, 0.63
 #print( rP.getCenter(K_2))
 #print( rP.getCenter(L_2))
 #print( logMin.logMinTest( P_2 , Q_2 ) )
-test_1 = rP.getCartesian(P_2)
-test_2 = rP.getCartesian(rP.getPolar( rP.getCartesian( P_2 )))
+test_1 = K_2
+test_2 = L_2
 sum = 0
 for i in range( len( test_1 ) ) :
     sum += M.dist( test_1[ i - 1 ] , test_2[ i - 2 ] )
