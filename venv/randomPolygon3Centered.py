@@ -209,6 +209,27 @@ def getAngle(point):
 #better distribution: select random n random angles between 0 and pi, then order them and return an array with every angle
 # berücksichtigt das hier die periodizität, also pi = 3*pi
 
+def makeBaryCentered( cartesianPolygon ):
+    P = cartesianPolygon
+    barycenter = [ 0 ,  0 ]
+    n = len(P)
+
+    for vertex in P:
+        barycenter = M.addScaleVek( barycenter , 1 / n , vertex )
+
+    for vertex in P:
+        vertex[0] -= barycenter[0]
+        vertex[1] -= barycenter[1]
+
+def getBaryCenter( cartesianPolygon ):
+    P = cartesianPolygon
+    barycenter = [ 0 ,  0 ]
+    n = len(P)
+
+    for vertex in P:
+        barycenter = M.addScaleVek( barycenter , 1 / n , vertex )
+
+    return barycenter
 
 # can be improved if ' u ' is already in polar coordinates
 def supportFunctionPolar( K_polar , u ):

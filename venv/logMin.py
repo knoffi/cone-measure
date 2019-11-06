@@ -24,16 +24,16 @@ import random as rd
 
 
 
-def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 ):
+def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 , bringInPosition , eps_prod ):
     K = orderedCartPolygon_1
     L = orderedCartPolygon_2
-    rP.makeCentered(K)
-    rP.makeCentered(L)
+    bringInPosition(K)
+    bringInPosition(L)
     rP.makeUnitVolume(K)
     rP.makeUnitVolume(L)
     # not sure if makeUnitVolume destroys the centered property... it is clear that it needs it for the normalization of volume
-    rP.makeCentered(K)
-    rP.makeCentered(L)
+    bringInPosition(K)
+    bringInPosition(L)
     coneVol = cV.getConeVol( K )
     #print( coneVol )
 
@@ -61,7 +61,7 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 ):
             print( coneVol[ i - 1][2] )
             pT.plotPoly( K , 'r')
             pT.plotPoly( L , 'g')
-    if prod >= 1:
+    if prod + eps_prod >= 1:
         return True
     else:
         #pT.plotPoly( K , 'r')
@@ -82,7 +82,7 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 ):
 # K = [ [ 1 , 0 ] , [ 0 , 1 ] , [ 0 , -1 ] ]
 # L = [ [ 1 , 0 ] , [ 0 , 1 ] , [ 0 , -1 ] ]
 
-def logMinAutoTest( repeats ):
+def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_volume , eps_logMin):
     n = 0
     logMinTrue = 0
     logMinFalse = 0
@@ -92,20 +92,20 @@ def logMinAutoTest( repeats ):
         Q = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
         K = rP.getCartesian( P )
         L = rP.getCartesian( Q )
-        if not logMinTest( K , L ):
+        if not logMinTest( K , L , bringInPosition , eps_logMin ):
 
             if pT.isConvex(K) and  pT.isConvex(L) and pT.isConvexRun(K) and  pT.isConvexRun(L):
-                if M.norm(rP.getCenter(K)) +  M.norm( rP.getCenter(L) ) < 0.0000001:
-                    if math.fabs( rP.getVolume(K) - 1 ) + math.fabs( rP.getVolume(L) - 1 ) < 0.0000001:
+                if M.norm( getPosition(K)) +  M.norm( getPosition(L) ) < eps_position:
+                    if math.fabs( rP.getVolume(K) - 1 ) + math.fabs( rP.getVolume(L) - 1 ) < eps_volume:
                         if len(K) == 3 or len(L) == 3:
                             #print( 'das darf nicht sein')
                             #print(K)
                             #print(L)
                             logMinTriangleFalse += 1
                         else:
-                            #print( 'logMin Gegenbeispiel' )
-                            #print( K )
-                            #print( L )
+                            print( 'logMin Gegenbeispiel' )
+                            print( K )
+                            print( L )
                             logMinFalse += 1
         else:
             logMinTrue += 1
@@ -114,7 +114,8 @@ def logMinAutoTest( repeats ):
     print('done')
     print( [ logMinTrue , logMinFalse , logMinTriangleFalse ] )
 
-logMinAutoTest( 1000 )
+#logMinAutoTest( 1000 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.8)
+#logMinAutoTest( 1000 , rP.makeBaryCentered , rP.getBaryCenter , 0.000000001 , 0.000000001 , 0.8)
 
 # mögliche Fehler: h wird negativ (support Function), coneVolume wird negativ, u hat norm null... solche Dinge.
 
