@@ -66,7 +66,7 @@ def plotPolyInArea( cartesianVertices, colorString , lowBound_x , upBound_x , lo
 # because of machine epsilon this wont work if point is on the boundary
 def containsPoint( orderedCartesianVertices , point ):
     if ( len( orderedCartesianVertices )  == 1 ):
-        if( M.norm( M.subVek( point , orderedCartesianVertices ) ) <= test_eps ):
+        if( M.norm( M.subVek( point , orderedCartesianVertices[1] ) ) <= test_eps ):
             return True
         else:
             return False
@@ -103,6 +103,8 @@ def isConvex( orderedCartesianVertices ):
     return True
 
 # maybe worse, because here we have to calculate arctan ( x / y )...
+
+# TODO: check, if eps at bound checks are making condition stronger (desirable for logMin counterexample) or easier to fulfill
 def isConvexRun( orderedCartesianVertices ):
     n = len(orderedCartesianVertices)
     for i in range( n ):
