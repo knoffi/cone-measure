@@ -64,8 +64,6 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 , bringInPosition , 
     if prod + eps_prod >= 1:
         return True
     else:
-        #pT.plotPoly( K , 'r')
-        #pT.plotPoly( L , 'g')
         #print( 1 - prod)
         return False
 
@@ -82,14 +80,14 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 , bringInPosition , 
 # K = [ [ 1 , 0 ] , [ 0 , 1 ] , [ 0 , -1 ] ]
 # L = [ [ 1 , 0 ] , [ 0 , 1 ] , [ 0 , -1 ] ]
 
-def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_volume , eps_logMin):
+def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_volume , eps_normals , eps_logMin):
     n = 0
     logMinTrue = 0
     logMinFalse = 0
     logMinTriangleFalse = 0
     while n < repeats:
-        P = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
-        Q = rP.getRandomNoncenteredPolarPolygon( math.floor( rd.random() * 10 ) + 3 )
+        P = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
+        Q = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
         K = rP.getCartesian( P )
         L = rP.getCartesian( Q )
         if not logMinTest( K , L , bringInPosition , eps_logMin ):
@@ -97,16 +95,20 @@ def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_
             if pT.isConvex(K) and  pT.isConvex(L) and pT.isConvexRun(K) and  pT.isConvexRun(L):
                 if M.norm( getPosition(K)) +  M.norm( getPosition(L) ) < eps_position:
                     if math.fabs( rP.getVolume(K) - 1 ) + math.fabs( rP.getVolume(L) - 1 ) < eps_volume:
-                        if len(K) == 3 or len(L) == 3:
-                            #print( 'das darf nicht sein')
-                            #print(K)
-                            #print(L)
-                            logMinTriangleFalse += 1
-                        else:
-                            print( 'logMin Gegenbeispiel' )
-                            print( K )
-                            print( L )
-                            logMinFalse += 1
+                        # which bound is sufficient for a stable logMin calculation? a bound of 0.00003 seems to be always fulfilled...
+                        if pT.getWorsteNormalsDirection(K) < eps_normals:
+                            if len(K) == 3 or len(L) == 3:
+                                #print( 'das darf nicht sein')
+                                #print(K)
+                                #print(L)
+                                logMinTriangleFalse += 1
+                            else:
+                                print( 'logMin Gegenbeispiel' )
+                                print( K )
+                                print( L )
+                                pT.plotPoly(K, 'r')
+                                pT.plotPoly(L, 'g')
+                                logMinFalse += 1
         else:
             logMinTrue += 1
 
@@ -114,8 +116,10 @@ def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_
     print('done')
     print( [ logMinTrue , logMinFalse , logMinTriangleFalse ] )
 
-#logMinAutoTest( 1000 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.8)
-#logMinAutoTest( 1000 , rP.makeBaryCentered , rP.getBaryCenter , 0.000000001 , 0.000000001 , 0.8)
+
+
+logMinAutoTest( 200 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.000000001, 0.5)
+#logMinAutoTest( 1000 , rP.makeBaryCentered , rP.getBaryCenter , 0.000000001 , 0.000000001 , 0.5)
 
 # mögliche Fehler: h wird negativ (support Function), coneVolume wird negativ, u hat norm null... solche Dinge.
 

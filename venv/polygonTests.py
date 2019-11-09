@@ -188,11 +188,97 @@ def makeEdgeNumberTest( repeats , edgeNumber ):
     #print(fail_less)
     #print(fail_more)
 
+def makeVertexDistTest( polygon, epsilon):
+    n = len(polygon)
+    for i in range(n):
+        if M.dist( polygon[ i % n] ,  polygon[i-1] ) >= epsilon:
+            return False
+    return True
+
+def getMinVertexDist( polygon):
+    result = math.inf
+    n = len(polygon)
+    for i in range(n):
+        value_1 = math.fabs(polygon[ i % n ][0] -  polygon[ i - 1 ][0] )
+        value_2 = math.fabs(polygon[i % n][1] - polygon[i - 1][1])
+        if value_1 < result:
+            result = value_1
+        if value_2 < result:
+            result = value_2
+    return result
+
+def makeNormalsTest( polygon , eps_norm, eps_direction ):
+    n = len( polygon )
+    cD = cV.getConeVol( polygon )
+
+    for i in range(n):
+        u = [ cD[i % n ][0] , cD[ i % n ][1] ]
+        if math.fabs( M.norm(u) - 1) > eps_norm:
+            return False
+
+        v = polygon[ i - 1 ]
+        w = polygon[ i % n ]
+
+        diff = math.fabs( M.scal( v , u ) - M.scal( w , u ) )
+
+        if diff > eps_direction:
+            return False
+
+    return True
+
+def getWorsteNormalsDirection( polygon ):
+    n = len( polygon )
+    result = 0
+    cD = cV.getConeVol( polygon )
+
+    for i in range(n):
+        u = [ cD[ i % n ][0] , cD[ i % n ][1] ]
+
+        v = polygon[ i - 1 ]
+        w = polygon[ i % n ]
+
+        diff = math.fabs( M.scal( v , u ) - M.scal( w , u ) )
+
+        if diff > result:
+            result = diff
+
+    return result
 
 dist = 1.0 / 2.0
 P_test = [ [ 2 , 5 ] , [ 0 , 5 ] , [ 0 , -3  ] , [ 2 , -3 ] ]
 
 rP.makeCentered( P_test )
+
+
+repeats = 10000
+eps_normTest = 0.00000001
+eps_directionTest = 0.00002
+
+
+# for eps_directionTest = 0.00002
+def getWorstNormDirection( repeats ,  eps_direction ):
+    success = 0
+    fails = 0
+    value_max = 0
+    worstPoly = []
+    for n in range(repeats):
+        K = rP.getRandomPolygon( 4 )
+        value = getWorsteNormalsDirection(K)
+        if value < eps_directionTest:
+            success += 1
+        else:
+            if value > value_max:
+                value_max = value
+                worstPoly = K
+            minVertDist = getMinVertexDist( K )
+            if minVertDist > 1:
+                print( minVertDist )
+
+    print( [ success , fails ])
+    plotPoly( worstPoly , 'r')
+    print( value_max )
+
+#getWorstNormDirection( 1000000 , eps_directionTest )
 
 
 
