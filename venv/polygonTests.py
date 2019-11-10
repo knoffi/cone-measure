@@ -84,7 +84,7 @@ def containsPoint( orderedCartesianVertices , point ):
         w = orderedCartesianVertices[ (i+1) % n ]
         d = M.subVek( w , v )
         normal = [ d[1] , -d[0] ]
-        if ( M.scal( normal , point) + test_eps > M.scal( normal , v) ):
+        if ( M.scal( normal , point) - containsPoint_eps > M.scal( normal , v) ):
             return False
         i = i + 1
     return True
@@ -113,24 +113,24 @@ def isConvexRun( orderedCartesianVertices ):
         x = orderedCartesianVertices[ ( i + 2 ) % n]
         d= M.subVek( w , v )
         e = M.subVek( x , w )
-        if( isNotStrictlyLeft( d , e) ):
+        if( isNotStrictlyLeft( d , e ) ):
             return False
     return True
 
 
 
-def isNotStrictlyLeft( u ,v_notLeft ):
+def isNotStrictlyLeft( u , v_notLeft ):
     alpha = rP.getAngle( u )
 
     beta = rP.getAngle( v_notLeft )
 
     if alpha < math.pi:
-        if alpha < beta + convexRun_eps and beta < alpha + math.pi + convexRun_eps:
+        if alpha < beta - convexRun_eps and beta < alpha + math.pi - convexRun_eps:
             return False
         else:
             return True
     else:
-        if alpha < beta + convexRun_eps or beta < alpha - math.pi + convexRun_eps:
+        if alpha < beta - convexRun_eps or beta < alpha - math.pi - convexRun_eps:
             return False
         else:
             return True
@@ -290,8 +290,8 @@ def getWorstNormDirection( repeats ,  eps_direction ):
 # eventuell wird ein tester besser, wenn ich die polarkoordinaten nicht komplett umwandle
 # HIER SOLLTE ALS NÄCHSTES GEARBEITET WERDEN; UM TESTER ZU VERBESSERN ::: WELCHE SIND DIE SINNVOLLEN EPSILONS FÜR DIE TEST-SCHRANKENß SOLLTE MAN SCHNELL MAL MACHINE EPSILON ZUVOR BERECHNEN? UND KONDITIONIEREUNG BESTIMMEN?
 # warum kriege ich so oft  benachbarte vertices mit fast gleichem Winkel (Zufall?) und (unnötig) fast gleichem Radius (Fehler bei minRadius, maxRadius) ?
-test_eps = mE.getMachEps()
-convexRun_eps = test_eps
+containsPoint_eps = 0.2 #1000000 * mE.getMachEps()
+convexRun_eps = containsPoint_eps
 test_repeats= 10000
 test_verticeNumber = 7
 #makeEdgeNumberTest( test_repeats , test_verticeNumber )

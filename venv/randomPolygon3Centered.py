@@ -209,6 +209,45 @@ def getAngle(point):
 #better distribution: select random n random angles between 0 and pi, then order them and return an array with every angle
 # berücksichtigt das hier die periodizität, also pi = 3*pi
 
+def downRoundVertices( vertices, digits ):
+
+    for point in vertices:
+
+        factor = 10**digits
+
+        point[0] = math.floor( point[0] * factor ) / factor
+        point[1] = math.floor( point[1] * factor ) / factor
+
+def roundVertices(vertices, digits):
+    for point in vertices:
+        factor = 10 ** digits
+        stretched_x = point[0] * factor
+        stretched_y = point[1] * factor
+        if math.floor( stretched_x * 10 ) % 10 < 5:
+            point[0] = math.floor(stretched_x) / factor
+        else:
+            point[0] = ( math.floor(stretched_x) + 1 ) / factor
+
+        if math.floor( stretched_y * 10 ) % 10 < 5:
+            point[1] = math.floor(stretched_y) / factor
+        else:
+            point[1] = ( math.floor(stretched_y) + 1 ) / factor
+
+
+tester_1 = [ [ 1.1 , 1.5 ] , [ 1.6 , 1.1 ] , [ 1.1 , 1.1 ] , [ 1.7 , 1.7 ] ]
+
+tester_2 = [ [ 1.1 , 1.5 ] , [ 1.6 , 1.1 ] , [ 1.1 , 1.1 ] , [ 1.7 , 1.7 ] ]
+
+tester_roundDownResult = [ [ 1 , 1 ] , [ 1 , 1 ] , [ 1 , 1 ] , [ 1 , 1 ] ]
+tester_roundResult = [ [ 1 , 2 ] , [ 2 , 1 ] , [ 1 , 1 ] , [ 2 , 2 ] ]
+downRoundVertices(tester_1 , 0 )
+roundVertices( tester_2 , 0)
+if(M.distMatrix( M.Matrix(tester_roundDownResult) , M.Matrix(tester_1)) > 0 ):
+    print('Fehler bei roundDownVertices')
+if( M.distMatrix( M.Matrix(tester_roundResult) , M.Matrix(tester_2))) > 0:
+    print('Fehler bei roundVertices')
+
+
 def makeBaryCentered( cartesianPolygon ):
     P = cartesianPolygon
     barycenter = [ 0 ,  0 ]

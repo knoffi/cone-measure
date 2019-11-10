@@ -116,9 +116,55 @@ def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_
     print('done')
     print( [ logMinTrue , logMinFalse , logMinTriangleFalse ] )
 
+def logMinRoundAutoTest( repeats , roundMethod, digits , bringInPosition, getPosition , eps_position , eps_volume , eps_normals , eps_logMin):
+    n = 0
+    logMinTrue = 0
+    logMinFalse = 0
+    logMinTriangleFalse = 0
+    while n < repeats:
+        P = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
+        Q = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
+        K = rP.getCartesian( P )
+        L = rP.getCartesian( Q )
+        roundMethod( K , digits )
+        roundMethod( L , digits )
+
+        #because of roundig, convexity can be lost and support function can get negativ
+        # because of rounding, two edges can be the same.
+        # and then norm vector will be [] or something ? Because a type error ouccurs
+        while(True):
+            try:
+                if not logMinTest( K , L , bringInPosition , eps_logMin ):
+
+                    if pT.isConvex(K) and  pT.isConvex(L) and pT.isConvexRun(K) and  pT.isConvexRun(L):
+                        if M.norm( getPosition(K)) +  M.norm( getPosition(L) ) < eps_position:
+                            if math.fabs( rP.getVolume(K) - 1 ) + math.fabs( rP.getVolume(L) - 1 ) < eps_volume:
+                                # which bound is sufficient for a stable logMin calculation? a bound of 0.00003 seems to be always fulfilled...
+                                if pT.getWorsteNormalsDirection(K) < eps_normals:
+                                    if len(K) == 3 or len(L) == 3:
+                                        #print( 'das darf nicht sein')
+                                        #print(K)
+                                        #print(L)
+                                        logMinTriangleFalse += 1
+                                    else:
+                                        print( 'logMin Gegenbeispiel' )
+                                        print( K )
+                                        print( L )
+                                        pT.plotPoly(K, 'r')
+                                        pT.plotPoly(L, 'g')
+                                        logMinFalse += 1
+                else:
+                    logMinTrue += 1
+                break
+            except TypeError:
+                break
+        n = n+1
+    print('done')
+    print( [ logMinTrue , logMinFalse , logMinTriangleFalse ] )
 
 
-logMinAutoTest( 200 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.000000001, 0.5)
+
+logMinAutoTest( 10000 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.000000001, 0.5)
 #logMinAutoTest( 1000 , rP.makeBaryCentered , rP.getBaryCenter , 0.000000001 , 0.000000001 , 0.5)
 
 # mögliche Fehler: h wird negativ (support Function), coneVolume wird negativ, u hat norm null... solche Dinge.
