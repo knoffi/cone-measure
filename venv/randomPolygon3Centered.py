@@ -6,6 +6,7 @@ import coneVol as cV
 import matrix as M
 import matplotlib.pyplot as mp
 import machEps as mE
+import fractions as f
 
 eps_max = 4096 * mE.getMachEps()
 eps_min = 4096 * mE.getMachEps()
@@ -455,6 +456,46 @@ def getMin(v,w,angle):
     return result[0]
 
 
+
+def round( number, digits):
+    if( number >= 0):
+        x = number * 10**digits
+        y = number * 10**(digits + 1) % 10
+
+        if y < 0:
+            print( 'error in round?')
+        if y < 5:
+            return math.floor(x) / ( 10 ** digits)
+        else:
+            return math.floor(x + 1 ) / ( 10 ** digits)
+    else:
+        return - round( - number, digits )
+
+print( round( 1.2 , 0 ) )
+print( round( 1.7 , 0 ))
+print( round( 0.5 , 0 ) )
+print( round( -0.2 , 0 ))
+print( round( -0.5 , 0 ))
+
+def getRationalWithDigits(K , digits ):
+
+    result = []
+    for v in K:
+        if v[0] >= 0:
+            numerator_0 = math.floor( v[0] * (10 ** digits))
+        else:
+            numerator_0 = math.floor(v[0] * (10 ** digits) - 1)
+        numerator_1 = math.floor(v[1] * (10 ** digits))
+
+        denominator_0 = 10 ** digits
+        denominator_1 = 10 ** digits
+
+        result.append(  [ f.Fraction( numerator_0 , denominator_0) , f.Fraction( numerator_1 , denominator_1 ) ] )
+
+    return result
+
+test_getRational = [ [ 1.19 , 1.37 ] , [ -0.901 , 0.72 ]]
+print( getRationalWithDigits( test_getRational , 1 ) )
 
 # test = [ [ 0 , 2 ] , [ 0.25 * math.pi , 1.42  ] , [ 0.75 * math.pi , 1.42 ] , [ 1 * math.pi , 2 ] ]
 # neighbours = getNeighbours( test , 0.5 * math.pi )
