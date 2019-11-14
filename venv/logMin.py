@@ -64,7 +64,7 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 , bringInPosition , 
     if prod + eps_prod >= 1:
         return True
     else:
-        print( 1 - prod)
+        #print( 1 - prod)
         return False
 
 #quotients = [ 0.05260231151731214,
@@ -86,9 +86,9 @@ def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_
     logMinFalse = 0
     logMinTriangleFalse = 0
     while n < repeats:
-        #P = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
+        P = rP.getRandomNoncenteredPolarPolygon( math.floor( 3 ) )
         Q = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
-        K = [[1, 1], [-1, 1], [-1, -1], [1, -1]]  # rP.getCartesian( P )
+        K = rP.getCartesian( P )
         L = rP.getCartesian( Q )
         if not logMinTest( K , L , bringInPosition , eps_logMin ):
 
@@ -98,9 +98,11 @@ def logMinAutoTest( repeats , bringInPosition, getPosition , eps_position , eps_
                         # which bound is sufficient for a stable logMin calculation? a bound of 0.00003 seems to be always fulfilled...
                         if pT.getWorsteNormalsDirection(K) < eps_normals:
                             if len(K) == 3 or len(L) == 3:
-                                #print( 'das darf nicht sein')
-                                #print(K)
-                                #print(L)
+                                print( 'das darf nicht sein')
+                                print(K)
+                                print(L)
+                                pT.plotPoly(K, 'r')
+                                pT.plotPoly(L, 'g')
                                 logMinTriangleFalse += 1
                             else:
                                 print( 'logMin Gegenbeispiel' )
@@ -142,9 +144,11 @@ def logMinRoundAutoTest( repeats , roundMethod, digits , bringInPosition, getPos
                                 # which bound is sufficient for a stable logMin calculation? a bound of 0.00003 seems to be always fulfilled...
                                 if pT.getWorsteNormalsDirection(K) < eps_normals:
                                     if len(K) == 3 or len(L) == 3:
-                                        #print( 'das darf nicht sein')
-                                        #print(K)
-                                        #print(L)
+                                        print( 'das darf nicht sein')
+                                        print(K)
+                                        print(L)
+                                        pT.plotPoly(K, 'r')
+                                        pT.plotPoly(L, 'g')
                                         logMinTriangleFalse += 1
                                     else:
                                         print( 'logMin Gegenbeispiel' )

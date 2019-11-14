@@ -59,6 +59,56 @@ def logMinTestRational( orderedCartPolygonRational_1 , orderedCartPolygonRationa
         print( logMinBound - prod)
         return False
 
+def logMinTestRational2(orderedCartPolygonRational_1, orderedCartPolygonRational_2, eps_prod):
+    A = orderedCartPolygonRational_1
+    B = orderedCartPolygonRational_2
+    # is volume formula false, if polytop is not centered?
+    info_A = rP.getCenterAndVolumeRational(A)
+    info_B = rP.getCenterAndVolumeRational(B)
+    rP.translateRational(A, info_A[0])
+    rP.translateRational(B, info_B[0])
+    info_A = rP.getCenterAndVolumeRational(A)
+    info_B = rP.getCenterAndVolumeRational(B)
+
+    # does this work? A has rational points...
+    coneVol = cV.getPseudoConeVolRational(A)
+
+    # the -1 is necessary because python calculates ln( 1 + x )
+    # dont worry, this meanas that exactly ln( (x - 1 ) + 1 ) = ln( x ) will be calculated, as long as x-1 > -1
+    logMinBound =  math.pow( info_B[1] / info_A[1] , info_A[1] * f.Fraction(1, 2) )
+
+    prod = 1
+
+    for i in range(len(A)):
+        # Reihenfolge der Normalenvektoren sollte jetzt egal sein
+        u = [coneVol[i - 1][0], coneVol[i - 1][1]]
+        h_1 = rP.supportFunctionCartesianCenteredRational(B, u)
+        h_2 = rP.supportFunctionCartesianCenteredRational(A, u)
+        quotient = h_1 / h_2
+        if quotient == 0:
+            print('quotient von logMin war gleich 0...')
+            print(u)
+            print(A[i - 1])
+            print(B[i - 1])
+        # print( quotient)
+        # print( K[ i - 1] )
+        # print( u )
+        if quotient >= 0:
+            # print('maybe I can improve this, here starts the inexactness...')
+            prod = prod * math.pow(quotient, coneVol[i - 1][2])
+        else:
+            print(' quotient von logMin war negativ')
+            print(u)
+            print(coneVol[i - 1][2])
+            # pT.plotPoly( A , 'r')
+            # pT.plotPoly( B , 'g')
+    if prod + eps_prod >= logMinBound:
+        return True
+    else:
+       # print('log min is false')
+        #print(logMinBound - prod)
+        return False
+
 
 def logMinRationalAutoTest( repeats , roundMethod, digits ,  eps_positionRational , eps_volumeRational , eps_normalsRational , eps_logMinRational):
     n = 0
@@ -90,7 +140,7 @@ def logMinRationalAutoTest( repeats , roundMethod, digits ,  eps_positionRationa
         info_R = rP.getCenterAndVolumeRational(R)
         info_S = rP.getCenterAndVolumeRational(S)
 
-        if not logMinTestRational( R , S , eps_logMinRational):
+        if not logMinTestRational2( R , S , eps_logMinRational) and not logMinTestRational( R , S , eps_logMinRational):
             centeredNorm = info_R[0][0] * info_R[0][0] + info_R[0][1] * info_R[0][1] + info_S[0][0] * info_S[0][0] + info_S[0][1] * info_S[0][1] * 1.0
             print( centeredNorm )
             if centeredNorm  < eps_positionRational:
@@ -98,10 +148,10 @@ def logMinRationalAutoTest( repeats , roundMethod, digits ,  eps_positionRationa
                 #if math.fabs( rP.getVolumeRational(M) - 1 ) + math.fabs( rP.getVolumeRational(N) - 1 ) < eps_volumeRational:
                 if len(K) == 3 or len(L) == 3:
                     #print( 'das darf nicht sein')
-                    rP.printRationalPolygon(R)
-                    rP.printRationalPolygon(S)
-                    pT.plotPoly(K, 'r')
-                    pT.plotPoly(L, 'g')
+                    #rP.printRationalPolygon(R)
+                    #rP.printRationalPolygon(S)
+                    #pT.plotPoly(K, 'r')
+                    #pT.plotPoly(L, 'g')
                     logMinTriangleFalse += 1
                 else:
                     print( 'logMin Gegenbeispiel' )
@@ -158,6 +208,6 @@ result_for_1digits_0Point01AsEps = 1.29
 result_for_1digits_0Point05AsEps = 1.7934
 
 
-logMinRationalAutoTest( 100 , rP.roundVertices , 1 , 0.000000001 , 0.000000001 , 0.000000001, 0.5)
+logMinRationalAutoTest( 1000 , rP.roundVertices , 1 , 0.000000001 , 0.000000001 , 0.000000001, 0.5)
 
 

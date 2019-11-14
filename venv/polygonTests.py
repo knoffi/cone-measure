@@ -8,6 +8,14 @@ import matplotlib.pyplot as mp
 import randomPolygon3Centered as rP
 import machEps as mE
 
+
+# eventuell wird ein tester besser, wenn ich die polarkoordinaten nicht komplett umwandle
+# HIER SOLLTE ALS NÄCHSTES GEARBEITET WERDEN; UM TESTER ZU VERBESSERN ::: WELCHE SIND DIE SINNVOLLEN EPSILONS FÜR DIE TEST-SCHRANKENß SOLLTE MAN SCHNELL MAL MACHINE EPSILON ZUVOR BERECHNEN? UND KONDITIONIEREUNG BESTIMMEN?
+# warum kriege ich so oft  benachbarte vertices mit fast gleichem Winkel (Zufall?) und (unnötig) fast gleichem Radius (Fehler bei minRadius, maxRadius) ?
+
+containsPoint_eps = 0.1 #1000000 * mE.getMachEps()
+convexRun_eps = containsPoint_eps
+
 def getPolyDomain(vertices):
     a = vertices[0][0]
     b = vertices[0][0]
@@ -289,11 +297,8 @@ def getWorstNormDirection( repeats ,  eps_direction ):
 
 
 
-# eventuell wird ein tester besser, wenn ich die polarkoordinaten nicht komplett umwandle
-# HIER SOLLTE ALS NÄCHSTES GEARBEITET WERDEN; UM TESTER ZU VERBESSERN ::: WELCHE SIND DIE SINNVOLLEN EPSILONS FÜR DIE TEST-SCHRANKENß SOLLTE MAN SCHNELL MAL MACHINE EPSILON ZUVOR BERECHNEN? UND KONDITIONIEREUNG BESTIMMEN?
-# warum kriege ich so oft  benachbarte vertices mit fast gleichem Winkel (Zufall?) und (unnötig) fast gleichem Radius (Fehler bei minRadius, maxRadius) ?
-containsPoint_eps = 0.2 #1000000 * mE.getMachEps()
-convexRun_eps = containsPoint_eps
+
+
 test_repeats= 10000
 test_verticeNumber = 7
 #makeEdgeNumberTest( test_repeats , test_verticeNumber )
@@ -355,3 +360,19 @@ if M.dist( center, center2) > 0.00001:
 #u = [ 1 , 1 ]
 
 #print( rP.supportFunction( support_test , u ) - 0.5 )
+
+repeats = 1000
+
+n = 0
+good_triangles = 0
+bad_triangles = 0
+while( n < repeats ):
+    P = rP.getRandomPolygon(3)
+
+    if isConvex( P ) and isConvexRun( P ):
+        good_triangles += 1
+    else:
+        bad_triangles += 1
+
+    n += 1
+print( [ good_triangles , bad_triangles ])
