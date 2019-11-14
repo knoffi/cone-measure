@@ -72,9 +72,11 @@ def containsPoint( orderedCartesianVertices , point ):
             return False
 
     if( len(orderedCartesianVertices) == 2 ):
+
         d = M.subVek(orderedCartesianVertices[0] , orderedCartesianVertices[1] )
         normal = [ d[1] , - d[0] ]
-        if( abs( M.scal( point , normal ) - M.scal( orderedCartesianVertices[0] , normal ) <= test_eps) ):
+
+        if( math.fabs( M.scal( point , normal ) - M.scal( orderedCartesianVertices[1] , normal ) ) <= containsPoint_eps ):
             return True
         else:
             return False

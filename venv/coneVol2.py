@@ -3,6 +3,7 @@ import matrix as M
 import machEps as mE
 import matplotlib.pyplot as mp
 import randomPolygon3Centered as rP
+import fractions as f
 
 # only works in R^2
 # is this counterclockwise? like my new polygon orderings... ?
@@ -296,6 +297,27 @@ def getConeVol(vertices):
 
         result.append([u[0],u[1],coneVolume])
     return result
+
+# it is pseudo, because u_i will not be normalized. This is not important for logMin inequality, since it cancels out
+def getPseudoConeVolRational(polygonRational):
+    result=[]
+    P = polygonRational
+    n=len(P)
+    for i in range( n ):
+        v = M.subVek( P[ i ] , P[ (i - 1 + n) % n ])
+        u = getClockRotation( v )
+
+        # this equals 1/2 * determinant, since norm of u is the same as norm of v, both get cancelled
+        volume =  f.Fraction( 1 , 2 ) * M.scal(u,P[i-1])
+        if volume < 0:
+            print('volume is negativ at ')
+            print(i)
+
+
+        result.append([u[0],u[1], volume ])
+    return result
+
+polygon_rationalTest = [ [ f.Fraction( 1 , 1 ) , f.Fraction( 0 , 1 )] , [ f.Fraction( 0 , 1 ) , f.Fraction( 1 , 1 )] , [ f.Fraction( -1 , 1 ) , f.Fraction( 0 , 1 )] , [ f.Fraction( 0 , 1 ) , f.Fraction( -1 , 1 )] ]
 
 A_test = M.Matrix( cD_test )
 cD_resultTest = getConeVol( [[ 1 , 1 ] , [ -1 , 1 ] , [ -1 , -1 ], [ 1 , -1 ] ] )

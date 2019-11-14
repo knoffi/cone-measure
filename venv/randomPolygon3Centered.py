@@ -128,6 +128,12 @@ def makeCentered( vertices ):
         point[0] = point[0] - center[0]
         point[1] = point[1] - center[1]
 
+def translateRational( verticesRational , translationRational):
+
+    for point in verticesRational:
+        point[0] = point[0] - translationRational[0]
+        point[1] = point[1] - translationRational[1]
+
 def getCenter( vertices ):
 
     P = vertices
@@ -144,12 +150,37 @@ def getCenter( vertices ):
 
         x += (p[0] + q[0]) * determinante
         y += (p[1] + q[1]) * determinante
+
         volume += 0.5 * determinante
 
     x = x / ( 6.0 * volume )
     y = y / ( 6.0 * volume )
     center = [ x , y ]
     return center
+
+def getCenterAndVolumeRational( verticesRational ):
+
+    P = verticesRational
+    x = f.Fraction( 0 , 1)
+    y = f.Fraction( 0 , 1)
+    n = len(P)
+    volume = f.Fraction( 0 , 1)
+
+    for i in range(n):
+        p = P[i]
+        q = P[(i + 1) % n]
+
+        determinante = (p[0] * q[1] - q[0] * p[1])
+
+        x += (p[0] + q[0]) * determinante
+        y += (p[1] + q[1]) * determinante
+
+        volume += f.Fraction( 1 , 2) * determinante
+
+    x = x / ( f.Fraction( 6 , 1) * volume )
+    y = y / ( f.Fraction( 6 , 1) * volume )
+    center = [ x , y ]
+    return [ center , volume ]
 
 
 # better distribution: do not set angle of first point as 0
@@ -301,20 +332,22 @@ def supportFunctionCartesianCentered( K_cartesianCentered , u ):
 
     return result
 
+def supportFunctionCartesianCenteredRational(K_cartesianCenteredRational, u_Rational):
 
+    P = K_cartesianCenteredRational
+    n = len(P)
+    result = math.inf
 
-    for i in range( n ):
-        result = getMaxVector( )
-    neighbours = getPolarNeighbours( K_polar , angle )
-    v = getCartesian([neighbours[1]])[0]
-    w = getCartesian([neighbours[2]])[0]
-    h_tilde = getMin( v , w , angle)
-    divisor = M.norm(u)
-    if divisor == 0:
-        print('warum ist u als Normalenvektor so klein?')
-        print( u )
-        return h_tilde / mE.getMachEps()
-    return h_tilde / M.norm(u)
+    # luckily, norm of u_i cancels in the fraction of the logMin product inequality...
+    # hier muss ich noch dran arbeiten...
+
+    for i in range(n):
+        # I do not need a special rational support function, do I?
+        scaling = getMinForSupport(P[i % n], P[i - 1], u_Rational)
+        if scaling > 0 and scaling < result:
+            result = scaling
+
+    return result
 
 
 def angleIsContained( polarVertices , angle ):
@@ -456,8 +489,8 @@ def getMin(v,w,angle):
     return result[0]
 
 
-
-def round( number, digits):
+# works like round but is rounding -0.5 to -1 isntead of 0
+def roundAwayFromZero( number, digits):
     if( number >= 0):
         x = number * 10**digits
         y = number * 10**(digits + 1) % 10
@@ -469,23 +502,27 @@ def round( number, digits):
         else:
             return math.floor(x + 1 ) / ( 10 ** digits)
     else:
-        return - round( - number, digits )
+        return - roundAwayFromZero( -number, digits )
 
-print( round( 1.2 , 0 ) )
-print( round( 1.7 , 0 ))
-print( round( 0.5 , 0 ) )
-print( round( -0.2 , 0 ))
-print( round( -0.5 , 0 ))
+
 
 def getRationalWithDigits(K , digits ):
 
     result = []
     for v in K:
-        if v[0] >= 0:
-            numerator_0 = math.floor( v[0] * (10 ** digits))
-        else:
-            numerator_0 = math.floor(v[0] * (10 ** digits) - 1)
-        numerator_1 = math.floor(v[1] * (10 ** digits))
+        a_0 = roundAwayFromZero( v[0] , digits ) * 10**digits
+        a_1 = roundAwayFromZero( v[1] , digits ) * 10**digits
+        numerator_0 = math.floor( a_0 )
+        numerator_1 = math.floor( a_1 )
+
+        if numerator_0 - a_0 > 0.5 :
+            print( 'approximated float number is lower than a0, I am trying to fix this')
+            numerator_0 = math.floor( a_0  + 0.5 )
+
+        if numerator_1 - a_1 > 0.5 :
+            print( 'approximated float number is lower than a0, I am trying to fix this')
+            numerator_1 = math.floor( a_1  + 0.5 )
+
 
         denominator_0 = 10 ** digits
         denominator_1 = 10 ** digits
@@ -493,34 +530,31 @@ def getRationalWithDigits(K , digits ):
         result.append(  [ f.Fraction( numerator_0 , denominator_0) , f.Fraction( numerator_1 , denominator_1 ) ] )
 
     return result
+def printRationalPolygon( rationalPolygon ):
+    string_result = ' [ '
+    for point in rationalPolygon:
+        frac0 = point[0]
+        frac1 = point[1]
+        if rationalPolygon.index(point) < len(rationalPolygon) - 1 :
+            string_result = string_result + ' [ %d/%d , %d/%d ] ,' % (frac0.numerator , frac0.denominator , frac1.numerator , frac1.denominator )
+        else:
+            string_result = string_result + ' [ %d/%d , %d/%d ] ' % (frac0.numerator, frac0.denominator, frac1.numerator, frac1.denominator)
 
-test_getRational = [ [ 1.19 , 1.37 ] , [ -0.901 , 0.72 ]]
-print( getRationalWithDigits( test_getRational , 1 ) )
+    print(string_result + ' ] ')
 
-# test = [ [ 0 , 2 ] , [ 0.25 * math.pi , 1.42  ] , [ 0.75 * math.pi , 1.42 ] , [ 1 * math.pi , 2 ] ]
-# neighbours = getNeighbours( test , 0.5 * math.pi )
-# print( maxRadius( neighbours , 0.5 * math.pi ) )
-# ein result mit zwei gleichen Punkten: [[1.3506563545534096, 0.0], [1.8164857151592047, 0.0], [1.3506563545534096, 0.0], [1.4946652011162949, 0.0]]
-#P = getRandomOriginPolarTriangle()
-# - minRadius testen und einbauen in getNextPoint von getRandomPolygon()
-# - minRadius ist notwendig, aber vllt muss man bei maxRadius und minRadius nur die Vorgänger überprüfen ... -> mache 2
-# - habe einmal [[44.44310714415645, 0.0], [-2.868745831991136, 18.486864345855214], [-14.100910361720999, -23.4225736149311], [-13.38842882794231, -23.35396107847429], [-14.085022122502007, 28.289670347550175]]
-#   rausbekommen. Das ist kein 5-Eck, zwei Punkte sind in der konvexen Hülle der anderen enthalten...
+test_getRational = [ [ 1.19 , 1.37 ] , [ -0.901 , 0.72 ] , [ -0.5 , -0.5  ] , [ 1.2075639364836 , -1.17947621917]]
+cube_rational = getRationalWithDigits( test_getRational , 0 )
 
 
 
-# oh shit
-# [[1, 0], [0, -1], [-1, 0]]
-# 1.4898145505571896
-# 1.5915425615297067
-# 3.404131410794002
-# oh shit
-# [[1, 0], [0, -1], [-1, 0]]
-# 1.7818867557071751
-# 1.8200557773619472
-# 3.6352952855406166
 
-# vertices = [ [ 1 , 1 ] , [ -1 , 1 ] , [ 0 , 1 ] ]
-# testPoint = [ 1 , 1 ]
-# print( containsPoint( vertices , testPoint ) )
-# [[2.6280147103737663, -3.9985536987429766], [-1.2515947854797322, 0.22196113640884813], [0.7102207863932186, 0.856232362200955]] may have been angles were the random triangle did not contain the origin! (mixed up checks, I am not sure about the tests...)
+M_test = M.Matrix( [ [ f.Fraction( 0 , 1) , f.Fraction( 2 , 1) ] , [ f.Fraction( 2 , 1) , f.Fraction( 0 , 1) ]])
+b_test = [ f.Fraction( 10 , 1) , f.Fraction( 8 , 1) ]
+solutuion_test = M_test.lgsSolve( b_test )
+exspectedSolution_test =  [ f.Fraction( 4 , 1) , f.Fraction( 5 , 1) ]
+
+if M.dist( exspectedSolution_test , solutuion_test ) > 0.001 :
+    print( exspectedSolution_test )
+    print( solutuion_test )
+    print( ' Fehler in lgs solve für rationale Zahlen')
+
