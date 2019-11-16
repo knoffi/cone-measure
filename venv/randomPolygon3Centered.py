@@ -322,13 +322,14 @@ def supportFunctionCartesianCentered( K_cartesianCentered , u ):
         print( ' u is not normed for support function, result needs to be divided by norm ')
         return []
     P = K_cartesianCentered
-    n = len(P)
-    result = math.inf
 
-    for i in range(n):
-        scaling = getMinForSupport( P[ i % n] , P[ i-1 ] , u )
-        if scaling > 0 and scaling < result:
-            result = scaling
+    result = -math.inf
+
+    for v in P:
+        # I do not need a special rational support function, do I?
+        value = M.scal(v, u)
+        if value > result:
+            result = value
 
     return result
 
@@ -337,13 +338,14 @@ def supportFunctionCartesianCentered2( K_cartesianCentered , u ):
         print( ' u is not normed for support function, result needs to be divided by norm ')
         return []
     P = K_cartesianCentered
-    n = len(P)
-    result = math.inf
 
-    for i in range(n):
-        scaling = getMinForSupport2( P[ i % n] , P[ i-1 ] , u )
-        if scaling > 0 and scaling < result:
-            result = scaling
+    result = -math.inf
+
+    for v in P:
+        # I do not need a special rational support function, do I?
+        value = M.scal(v, u)
+        if value > result:
+            result = value
 
     return result
 
@@ -351,16 +353,16 @@ def supportFunctionCartesianCenteredRational(K_cartesianCenteredRational, u_Rati
 
     P = K_cartesianCenteredRational
     n = len(P)
-    result = math.inf
+    result = -math.inf
 
     # luckily, norm of u_i cancels in the fraction of the logMin product inequality...
     # hier muss ich noch dran arbeiten...
 
-    for i in range(n):
+    for v in P:
         # I do not need a special rational support function, do I?
-        scaling = getMinForSupport2(P[i % n], P[i - 1], u_Rational)
-        if scaling > 0 and scaling < result:
-            result = scaling
+        value = M.scal( v , u_Rational)
+        if value > result:
+            result = value
 
     return result
 

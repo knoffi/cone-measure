@@ -116,7 +116,7 @@ def logMinTestRationalNormalizing( logMinValues , eps_prod):
     else:
         # print('log min is false')
         print(prod)
-        print( logMinValues )
+        #print( logMinValues )
         return False
 
 
@@ -128,8 +128,8 @@ def logMinRationalAutoTest( repeats , digits ,  eps_logMinRational):
     centeredFails = 0
     while n < repeats:
 
-        K = rRP.getRandomRoundedPolygon( 3 , digits)
-        L = rRP.getRandomRoundedPolygon( 4 , digits)
+        K = rRP.getRandomRoundedPolygon( 5 , digits)
+        L = rRP.getRandomRoundedPolygon( 6 , digits)
 
         R = rRP.getRationalWithDigits( K , digits )
         S = rRP.getRationalWithDigits(L, digits)
@@ -142,33 +142,37 @@ def logMinRationalAutoTest( repeats , digits ,  eps_logMinRational):
         info_S = rP.getCenterAndVolumeRational(S)
 
         logMinValues = logMinTestRationalPreparation( R , S )
+        while(True):
+            try:
+                if not logMinTestRational2( logMinValues , eps_logMinRational) and not logMinTestRational1( logMinValues , eps_logMinRational) and not logMinTestRationalNormalizing( logMinValues , eps_logMinRational ):
+                    #centeredNorm = info_R[0][0] * info_R[0][0] + info_R[0][1] * info_R[0][1] + info_S[0][0] * info_S[0][0] + info_S[0][1] * info_S[0][1]
+                    #print( centeredNorm )
+                    if len(R) == 3 or len(S) == 3:
+                        #print( 'das darf nicht sein')
+                        rP.printRationalPolygon(R)
+                        rP.printRationalPolygon(S)
+                        pT.plotPoly(K, 'r')
+                        pT.plotPoly(L, 'g')
+                        logMinTriangleFalse += 1
+                        break
+                    else:
+                        print( 'logMin Gegenbeispiel' )
+                        rP.printRationalPolygon( R )
+                        rP.printRationalPolygon( S )
+                        pT.plotPoly(R, 'r')
+                        pT.plotPoly(S, 'g')
+                        logMinFalse += 1
+                else:
+                    logMinTrue += 1
 
-        if not logMinTestRational2( logMinValues , eps_logMinRational) and not logMinTestRational1( logMinValues , eps_logMinRational) and not logMinTestRationalNormalizing( logMinValues , eps_logMinRational ):
-            #centeredNorm = info_R[0][0] * info_R[0][0] + info_R[0][1] * info_R[0][1] + info_S[0][0] * info_S[0][0] + info_S[0][1] * info_S[0][1]
-            #print( centeredNorm )
-            if len(R) == 3 or len(S) == 3:
-                #print( 'das darf nicht sein')
-                rP.printRationalPolygon(R)
-                rP.printRationalPolygon(S)
-                pT.plotPoly(K, 'r')
-                pT.plotPoly(L, 'g')
-                logMinTriangleFalse += 1
+                n = n+1
                 break
-            else:
-                print( 'logMin Gegenbeispiel' )
-                rP.printRationalPolygon( R )
-                rP.printRationalPolygon( S )
-                pT.plotPoly(R, 'r')
-                pT.plotPoly(S, 'g')
-                logMinFalse += 1
-        else:
-            logMinTrue += 1
-
-        n = n+1
+            except OverflowError or ZeroDivisionError:
+                break
     print('done')
     print( [ logMinTrue , logMinFalse , centeredFails, logMinTriangleFalse  ] )
 
-logMinRationalAutoTest( 20 , 1 , 0)
+logMinRationalAutoTest( 1000 , 3 , 0)
 
 
 def getAveragePolygonConditions( digits , eps  ):
@@ -207,3 +211,7 @@ result_for_1digits_0Point1AsEps = 2.6558
 
 result_for_1digits_0Point01AsEps = 1.29
 result_for_1digits_0Point05AsEps = 1.7934
+
+
+#def testSupportFunctions( K , L):
+

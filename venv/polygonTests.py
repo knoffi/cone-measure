@@ -15,7 +15,7 @@ import fractions as f
 # HIER SOLLTE ALS NÄCHSTES GEARBEITET WERDEN; UM TESTER ZU VERBESSERN ::: WELCHE SIND DIE SINNVOLLEN EPSILONS FÜR DIE TEST-SCHRANKENß SOLLTE MAN SCHNELL MAL MACHINE EPSILON ZUVOR BERECHNEN? UND KONDITIONIEREUNG BESTIMMEN?
 # warum kriege ich so oft  benachbarte vertices mit fast gleichem Winkel (Zufall?) und (unnötig) fast gleichem Radius (Fehler bei minRadius, maxRadius) ?
 
-containsPoint_eps = 0.2 #1000000 * mE.getMachEps()
+containsPoint_eps = 0.01 #1000000 * mE.getMachEps()
 convexRun_eps = containsPoint_eps
 
 def getPolyDomain(vertices):
@@ -132,6 +132,10 @@ def isConvexRun( orderedCartesianVertices ):
 
 
 def isNotStrictlyLeft( u , v_notLeft ):
+
+    if u == [ 0 , 0 ] or v_notLeft == [ 0 , 0 ]:
+        return True
+
     alpha = rP.getAngle( u )
 
     beta = rP.getAngle( v_notLeft )
@@ -305,6 +309,7 @@ def supportTest( repeats):
     easyFail = 0
     n = 0
     while( n < repeats):
+        containsPoint_eps = 0
 
         P = rP.getRandomPolygon(3)
         Q = rP.getRandomPolygon(4)
@@ -345,6 +350,7 @@ def supportTest( repeats):
     print( [ easyFail , tooBig , tooSmall , tooSmall2 , tooSmall3 ])
 
 def supportRationalTest ( repeats):
+    containsPoint_eps = 0
     tooSmall = 0
     tooSmall2 = 0
     tooBig = 0
@@ -357,8 +363,8 @@ def supportRationalTest ( repeats):
         #rP.supportFunctionCartesianCenteredRational()
         for i in range(len(P)):
             u = [ P[i % len(P)][1] - P[i - 1][1]  , P[ i % len(P)][0] - P[ i - 1][0] ]
-            alpha = rP.supportFunctionCartesianCenteredRational( Q , u)
-            beta = rP.supportFunctionCartesianCenteredRational(Q, u)
+            alpha = rP.supportFunctionCartesianCenteredRational( Q , u) / ( u[0] * u[0] + u[1] * u[1])
+            beta = rP.supportFunctionCartesianCenteredRational(Q, u) / ( u[0] * u[0] + u[1] * u[1])
 
             #pos_diff = M.scal( u , P[ i - 1 ]) - rP.supportFunctionCartesianCentered2( P , u)
 
@@ -383,6 +389,9 @@ def supportRationalTest ( repeats):
 
     print( [ easyFail , tooBig , tooSmall , tooSmall2 ])
 
+
+#supportRationalTest( 100 )
+
 def trySupport( Q , u , eps):
     alternative = 1
     exp = 0
@@ -405,7 +414,7 @@ def trySupport( Q , u , eps):
     return alternative
 
 
-supportTest(1000)
+#supportTest(1000)
 
 
 def compareSupportFunctions( repeats , eps ):
@@ -536,4 +545,62 @@ def testIsContainedSquare( repeats ):
 
     print( [fail_1 , fail_2])
 
-testIsContainedSquare( 100 )
+#testIsContainedSquare( 100 )
+
+def vizualizeSupportRational( rationalPolygon, rationalDirection):
+    P = rationalPolygon
+    u = rationalDirection
+
+    norm_squared = u[0] * u[0] + u[1] * u[1]
+
+    alpha = rP.supportFunctionCartesianCenteredRational( P , u) / norm_squared
+    p = M.scaleVek( alpha , u )
+
+    # make p and polygon coordinates to float numbers
+    for point in P:
+        point[0] += 0.0
+        point[1] += 0.0
+        p[0] += 0.0
+        p[1] += 0.0
+
+
+    x=[]
+    y=[]
+    support_x = []
+    support_y = []
+    supportLineDirection = [ -p[1] , p[0] ]
+
+    for v in P:
+        x.append(v[0])
+        y.append(v[1])
+
+
+    for i in range(100):
+        point_pos = M.addScaleVek( p , i/10.0 , supportLineDirection)
+        point_neg = M.addScaleVek(p, -i/10.0, supportLineDirection)
+        support_x.append(point_pos[0])
+        support_y.append(point_pos[1])
+        support_x.append(point_neg[0])
+        support_y.append(point_neg[1])
+
+    # make a line between last point and first point
+    x.append(P[0][0])
+    y.append(P[0][1])
+    #x.append( 0 )
+    #y.append( 0 )
+    mp.plot( x , y , 'r' + '--' )
+    mp.plot( x , y , 'r' + 'o' )
+    mp.plot( p[0] , p[1] , 'ro' )
+    mp.plot( support_x , support_y , 'bo')
+    mp.axis(getPolyDomain(P))
+
+    mp.show()
+
+
+
+
+
+#vizualizeSupportRational( rRP.getRandomRationalPolygon( 3 , 1 ) , [ f.Fraction( 1 , 1 ) , f.Fraction( 1 , 1 ) ] )
+
+
+

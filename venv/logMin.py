@@ -124,8 +124,8 @@ def logMinRoundAutoTest( repeats , roundMethod, digits , bringInPosition, getPos
     logMinFalse = 0
     logMinTriangleFalse = 0
     while n < repeats:
-        P = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
-        Q = rP.getRandomNoncenteredPolarPolygon( math.floor( 4 ) )
+        P = rP.getRandomNoncenteredPolarPolygon( math.floor( 10 * random.random() ) + 4 )
+        Q = rP.getRandomNoncenteredPolarPolygon( math.floor( 10 * random.random() ) + 4 )
         K = rP.getCartesian( P )
         L = rP.getCartesian( Q )
         roundMethod( K , digits )
@@ -168,7 +168,7 @@ def logMinRoundAutoTest( repeats , roundMethod, digits , bringInPosition, getPos
 
 
 
-logMinAutoTest( 10000 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.000000001, 0.5)
+logMinAutoTest( 10000 , rP.makeCentered , rP.getCenter , 0.000000001 , 0.000000001 , 0.000000001, 0.00000001)
 #logMinAutoTest( 1000 , rP.makeBaryCentered , rP.getBaryCenter , 0.000000001 , 0.000000001 , 0.5)
 
 # mögliche Fehler: h wird negativ (support Function), coneVolume wird negativ, u hat norm null... solche Dinge.
