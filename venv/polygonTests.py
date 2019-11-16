@@ -7,6 +7,8 @@ import matrix as M
 import matplotlib.pyplot as mp
 import randomPolygon3Centered as rP
 import machEps as mE
+import randomRationalPolygon as rRP
+import fractions as f
 
 
 # eventuell wird ein tester besser, wenn ich die polarkoordinaten nicht komplett umwandle
@@ -295,6 +297,139 @@ def getWorstNormDirection( repeats ,  eps_direction ):
 
 
 
+def supportTest( repeats):
+    tooSmall = 0
+    tooSmall2 = 0
+    tooSmall3 = 3
+    tooBig = 0
+    easyFail = 0
+    n = 0
+    while( n < repeats):
+
+        P = rP.getRandomPolygon(3)
+        Q = rP.getRandomPolygon(4)
+        cD_P = cV.getConeVol(P)
+
+        for i in range(len(P)):
+            u = [ cD_P[i-1][0] , cD_P[i-1][1] ]
+            alpha = rP.supportFunctionCartesianCentered( Q , u)
+            beta = rP.supportFunctionCartesianCentered2(Q, u)
+            gamma = trySupport( Q , u , 0.0000001)
+
+            if math.fabs( M.scal( u , P[ i - 1 ]) - rP.supportFunctionCartesianCentered2( P , u) ) > 1 :
+                easyFail += 1
+
+            if not ( containsPoint( Q , M.scaleVek( alpha - math.exp( -15) , u ) )):
+                tooBig += 1
+
+            if ( containsPoint(Q, M.scaleVek(alpha + 0.01, u))):
+                #plotPoly( P , 'r' )
+                #plotPoly( Q , 'y')
+
+                tooSmall += 1
+
+            if ( containsPoint(Q, M.scaleVek(beta + 0.01, u))):
+                #plotPoly( P , 'r' )
+                #plotPoly( Q , 'y')
+
+                tooSmall2 += 1
+
+            if ( containsPoint(Q, M.scaleVek(gamma + 0.01, u))):
+                #plotPoly( P , 'r' )
+                #plotPoly( Q , 'y')
+
+                tooSmall3 += 1
+        n += 1
+
+    print( [ easyFail , tooBig , tooSmall , tooSmall2 , tooSmall3 ])
+
+def supportRationalTest ( repeats):
+    tooSmall = 0
+    tooSmall2 = 0
+    tooBig = 0
+    easyFail = 0
+    n = 0
+    while( n < repeats):
+
+        P = rRP.getRandomRationalPolygon(3 , 3)
+        Q = rRP.getRandomRationalPolygon(4 , 3)
+        #rP.supportFunctionCartesianCenteredRational()
+        for i in range(len(P)):
+            u = [ P[i % len(P)][1] - P[i - 1][1]  , P[ i % len(P)][0] - P[ i - 1][0] ]
+            alpha = rP.supportFunctionCartesianCenteredRational( Q , u)
+            beta = rP.supportFunctionCartesianCenteredRational(Q, u)
+
+            #pos_diff = M.scal( u , P[ i - 1 ]) - rP.supportFunctionCartesianCentered2( P , u)
+
+            #if   pos_diff > 0.1  or - pos_diff > 0.1:
+            #   easyFail += 1
+
+            if not ( containsPoint( Q , M.scaleVek( alpha - f.Fraction( 1, 10) , u ) )):
+                tooBig += 1
+
+            if ( containsPoint(Q, M.scaleVek(alpha + f.Fraction( 1, 1000), u))):
+                #plotPoly( P , 'r' )
+                #plotPoly( Q , 'y')
+
+                tooSmall += 1
+
+            if ( containsPoint(Q, M.scaleVek(beta + f.Fraction( 1, 1000), u))):
+                #plotPoly( P , 'r' )
+                #plotPoly( Q , 'y')
+
+                tooSmall2 += 1
+        n += 1
+
+    print( [ easyFail , tooBig , tooSmall , tooSmall2 ])
+
+def trySupport( Q , u , eps):
+    alternative = 1
+    exp = 0
+    if containsPoint(Q, u):
+        while containsPoint(Q, M.scaleVek(alternative + eps, u)) or not containsPoint(Q,
+                                                                                      M.scaleVek(alternative - eps, u)):
+            if containsPoint(Q, M.scaleVek(alternative + 10 ** exp, u)):
+                alternative += 10 ** exp
+            else:
+                exp -= 1
+
+    else:
+        while containsPoint(Q, M.scaleVek(alternative + eps, u)) or not containsPoint(Q,
+                                                                                      M.scaleVek(alternative - eps, u)):
+
+            if not containsPoint(Q, M.scaleVek(alternative + 10 ** exp, u)):
+                alternative -= 10 ** exp
+            else:
+                exp -= 1
+    return alternative
+
+
+supportTest(1)
+
+
+def compareSupportFunctions( repeats , eps ):
+    P = rP.getRandomPolygon(3)
+    Q = rP.getRandomPolygon(4)
+    cD_P = cV.getConeVol(P)
+
+    for i in range(len(P)):
+        u = [cD_P[i - 1][0], cD_P[i - 1][1]]
+        alpha = rP.supportFunctionCartesianCentered(Q, u)
+        beta = rP.supportFunctionCartesianCentered2(Q, u)
+        alternative = trySupport( Q , u )
+
+
+
+
+        print(alternative)
+        print( alpha)
+        print( beta )
+
+
+
+
+
+
 
 
 
@@ -329,7 +464,7 @@ beta = rP.supportFunctionCartesianCentered( Quadrat , u )
 if math.fabs( beta - math.sqrt(2) ) > 0.00000001  :
     print( ' Fehler bei supportCartesianCentered function test ')
     print(beta)
-plotPoly( Quadrat , 'r' )
+
 
 Trapez = [  [ 1 , 1] , [ 0 , 1] , [-3 , - 1] , [ 0 , -1 ] ]
 
@@ -375,4 +510,4 @@ while( n < repeats ):
         bad_triangles += 1
 
     n += 1
-print( [ good_triangles , bad_triangles ])
+#print( [ good_triangles , bad_triangles ])

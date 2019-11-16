@@ -332,6 +332,21 @@ def supportFunctionCartesianCentered( K_cartesianCentered , u ):
 
     return result
 
+def supportFunctionCartesianCentered2( K_cartesianCentered , u ):
+    if math.fabs( M.norm( u ) - 1 ) > 0.0001:
+        print( ' u is not normed for support function, result needs to be divided by norm ')
+        return []
+    P = K_cartesianCentered
+    n = len(P)
+    result = math.inf
+
+    for i in range(n):
+        scaling = getMinForSupport2( P[ i % n] , P[ i-1 ] , u )
+        if scaling > 0 and scaling < result:
+            result = scaling
+
+    return result
+
 def supportFunctionCartesianCenteredRational(K_cartesianCenteredRational, u_Rational):
 
     P = K_cartesianCenteredRational
@@ -343,7 +358,7 @@ def supportFunctionCartesianCenteredRational(K_cartesianCenteredRational, u_Rati
 
     for i in range(n):
         # I do not need a special rational support function, do I?
-        scaling = getMinForSupport(P[i % n], P[i - 1], u_Rational)
+        scaling = getMinForSupport2(P[i % n], P[i - 1], u_Rational)
         if scaling > 0 and scaling < result:
             result = scaling
 
@@ -475,6 +490,19 @@ def getMinForSupport( v , w , u ):
         return -math.inf
     return result[0]
 
+def getMinForSupport2( v , w , u ):
+    u_1 = u
+    u_2 = M.subVek(v,w)
+    #print(u_1)
+    U= M.Matrix([u_1,u_2]).copyTrans()
+    #U.list()
+    result=U.lgsSolve2x2(v)
+    # my lgsSolver returns a 'solution' even if v is not in im(M) . Therefore the if-check needs to get adjusted
+    if( M.dist( U.image(result) , v ) > 0.0001 ):
+        return -math.inf
+    return result[0]
+
+
 
 
 def getMin(v,w,angle):
@@ -489,47 +517,9 @@ def getMin(v,w,angle):
     return result[0]
 
 
-# works like round but is rounding -0.5 to -1 isntead of 0
-def roundAwayFromZero( number, digits):
-    if( number >= 0):
-        x = number * 10**digits
-        y = number * 10**(digits + 1) % 10
-
-        if y < 0:
-            print( 'error in round?')
-        if y < 5:
-            return math.floor(x) / ( 10 ** digits)
-        else:
-            return math.floor(x + 1 ) / ( 10 ** digits)
-    else:
-        return - roundAwayFromZero( -number, digits )
 
 
 
-def getRationalWithDigits(K , digits ):
-
-    result = []
-    for v in K:
-        a_0 = roundAwayFromZero( v[0] , digits ) * 10**digits
-        a_1 = roundAwayFromZero( v[1] , digits ) * 10**digits
-        numerator_0 = math.floor( a_0 )
-        numerator_1 = math.floor( a_1 )
-
-        if numerator_0 - a_0 > 0.5 :
-            print( 'approximated float number is lower than a0, I am trying to fix this')
-            numerator_0 = math.floor( a_0  + 0.5 )
-
-        if numerator_1 - a_1 > 0.5 :
-            print( 'approximated float number is lower than a0, I am trying to fix this')
-            numerator_1 = math.floor( a_1  + 0.5 )
-
-
-        denominator_0 = 10 ** digits
-        denominator_1 = 10 ** digits
-
-        result.append(  [ f.Fraction( numerator_0 , denominator_0) , f.Fraction( numerator_1 , denominator_1 ) ] )
-
-    return result
 def printRationalPolygon( rationalPolygon ):
     string_result = ' [ '
     for point in rationalPolygon:
@@ -542,8 +532,6 @@ def printRationalPolygon( rationalPolygon ):
 
     print(string_result + ' ] ')
 
-test_getRational = [ [ 1.19 , 1.37 ] , [ -0.901 , 0.72 ] , [ -0.5 , -0.5  ] , [ 1.2075639364836 , -1.17947621917]]
-cube_rational = getRationalWithDigits( test_getRational , 0 )
 
 
 

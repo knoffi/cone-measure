@@ -64,7 +64,7 @@ def logMinTest( orderedCartPolygon_1 , orderedCartPolygon_2 , bringInPosition , 
     if prod + eps_prod >= 1:
         return True
     else:
-        #print( 1 - prod)
+        print( 1 - prod)
         return False
 
 #quotients = [ 0.05260231151731214,
