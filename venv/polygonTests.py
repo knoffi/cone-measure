@@ -15,7 +15,7 @@ import fractions as f
 # HIER SOLLTE ALS NÄCHSTES GEARBEITET WERDEN; UM TESTER ZU VERBESSERN ::: WELCHE SIND DIE SINNVOLLEN EPSILONS FÜR DIE TEST-SCHRANKENß SOLLTE MAN SCHNELL MAL MACHINE EPSILON ZUVOR BERECHNEN? UND KONDITIONIEREUNG BESTIMMEN?
 # warum kriege ich so oft  benachbarte vertices mit fast gleichem Winkel (Zufall?) und (unnötig) fast gleichem Radius (Fehler bei minRadius, maxRadius) ?
 
-containsPoint_eps = 0.1 #1000000 * mE.getMachEps()
+containsPoint_eps = 0.2 #1000000 * mE.getMachEps()
 convexRun_eps = containsPoint_eps
 
 def getPolyDomain(vertices):
@@ -296,7 +296,7 @@ def getWorstNormDirection( repeats ,  eps_direction ):
 
 
 
-
+# BEFORE DOING THIS TEST; SET EPS_CONTAINED TO 0 !!!!!!!!
 def supportTest( repeats):
     tooSmall = 0
     tooSmall2 = 0
@@ -311,10 +311,11 @@ def supportTest( repeats):
         cD_P = cV.getConeVol(P)
 
         for i in range(len(P)):
+            print(len(P))
             u = [ cD_P[i-1][0] , cD_P[i-1][1] ]
             alpha = rP.supportFunctionCartesianCentered( Q , u)
             beta = rP.supportFunctionCartesianCentered2(Q, u)
-            gamma = trySupport( Q , u , 0.0000001)
+            gamma = 1#trySupport( Q , u , 0.0000001)
 
             if math.fabs( M.scal( u , P[ i - 1 ]) - rP.supportFunctionCartesianCentered2( P , u) ) > 1 :
                 easyFail += 1
@@ -404,7 +405,7 @@ def trySupport( Q , u , eps):
     return alternative
 
 
-supportTest(1)
+supportTest(1000)
 
 
 def compareSupportFunctions( repeats , eps ):
@@ -511,3 +512,28 @@ while( n < repeats ):
 
     n += 1
 #print( [ good_triangles , bad_triangles ])
+
+
+def testIsContainedSquare( repeats ):
+    square = [ [ 1 , 0 ] , [ 0 , 1] , [ -1 , 0 ] , [ 0 , -1 ] ]
+    fail_1 = 0
+    fail_2 = 0
+
+    n = 0
+
+    while( n < repeats):
+        point = [ 2 * random.random() , 2 * random.random() ]
+        norm_1 = math.fabs(point[0]) +  math.fabs(point[1])
+
+        if norm_1 <= 1 and not containsPoint( square , point):
+            fail_1 += 1
+
+        if norm_1 > 1 and containsPoint( square , point):
+            fail_2 += 1
+            print( point )
+
+        n += 1
+
+    print( [fail_1 , fail_2])
+
+testIsContainedSquare( 100 )
