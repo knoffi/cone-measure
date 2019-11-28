@@ -189,6 +189,19 @@ def gradPhiApprox( params , cD , h ):
 
     return [ quotient_diff1 , quotient_diff2 ]
 
+def diffConeVolIteratorApprox( params , cD , h ):
+    e_1 = [1, 0]
+    e_2 = [0, 1]
+
+    point_diff1 = M.addVek(params, M.scaleVek(h, e_1))
+    quotient_diff1 = M.subVek( coneVolIterator( cD , point_diff1) ,  coneVolIterator( cD , params ) )
+    quotient_diff1 = M.scaleVek( 1.0 / h , quotient_diff1 )
+    point_diff2 = M.addVek(params, M.scaleVek(h, e_2))
+    quotient_diff2 = M.subVek( coneVolIterator( cD , point_diff2 ) , coneVolIterator( cD , params))
+    quotient_diff2 = M.scaleVek( 1.0 / h , quotient_diff2 )
+
+    return M.Matrix( [ quotient_diff1 , quotient_diff2 ]).copyTrans()
+
 def g(a, x):
     return a * x[0] ** 2
 

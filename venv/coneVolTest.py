@@ -261,6 +261,50 @@ def hMethodConeVolIteratorCheck( cD ,  point , eps , h):
         return False
     return True
 
+# has to be taken with diff from coneVolumeIterator because gamma changes determinant
+def getDistOfDet( params , cD ):
+    diff = cV.diffConeVolumeIterator( cD , params)
+    det = diff.rows[0][0] * diff.rows[1][1] - diff.rows[1][0] * diff.rows[0][1]
+    return math.fabs( det - 1 )
+
+def checkDetOfDiff( params , cD , eps ):
+    if getDistOfDet( params , cD) < eps:
+        return True
+    else:
+        return False
+
+def getDistOfDetApprox( params , cD ):
+    diff = cV.diffConeVolIteratorApprox( params , cD , 0.001)
+    det = diff.rows[0][0] * diff.rows[1][1] - diff.rows[1][0] * diff.rows[0][1]
+    return math.fabs( det - 1 )
+
+def checkDetOfDiffApprox( params , cD , eps ):
+    if getDistOfDetApprox( params , cD) < eps:
+        return True
+    else:
+        return False
+
+def testerDetOfDiff( repeats, range_test, eps ):
+    complete_fail = 0
+    approx_fail = 0
+    analytic_fail = 0
+    for i in range( repeats ):
+        P = rP.getRandomPolygon( 5)#random.random() * 5 + 3 )
+        cD = cV.getConeVol( P )
+        point = [ random.random() * 2 * range_test - range_test , random.random() * 2 * range_test - range_test ]
+        if not checkDetOfDiff( point , cD , eps):
+            if not checkDetOfDiffApprox( point , cD , eps ):
+                complete_fail += 1
+            else:
+                analytic_fail += 1
+        else:
+            if not checkDetOfDiffApprox( point , cD , eps):
+                approx_fail += 1
+
+    print( [ repeats , complete_fail , analytic_fail , approx_fail ] )
+
+testerDetOfDiff( 10000 , 1 , 0.00000001)
+
 
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
