@@ -3,6 +3,7 @@ import matrix as M
 import machEps as mE
 import matplotlib.pyplot as mp
 import randomPolygon3Centered as rP
+import fractions as f
 
 # only works in R^2
 # is this counterclockwise? like my new polygon orderings... ?
@@ -54,6 +55,17 @@ def coneVolIterator(coneData, point):
     for x in point:
         result.append(x)
     return result
+# where does it start?
+def getConeVolIteratedVertices( cD , point ):
+    result = []
+    n = len(cD)
+
+    for i in range(n):
+        facet = cD[(i + 1) % n]
+        nextVertex([facet[0], facet[1]], facet[2], point)
+        touchedPoint = [ point [0] , point[1]]
+        result.append( touchedPoint )
+    return result
 
 def getConeVolIterator(coneData, point):
     result = []
@@ -68,7 +80,7 @@ if M.dist(getConeVolIterator( cD_test , point_test ) , point_test ) > 0.00001 :
 
 # berechnet abstand zum quadrat
 def polyFunctional(coneData, point):
-    return M.norm(M.subVek(point, getConeVolIterator(coneData, point))) ** 2
+    return M.dist(point, getConeVolIterator(coneData, point)) ** 2
 
 if polyFunctional( cD_test , point_test ) > 0.0001:
     print( ' Fehler bei polyFunctional ')
@@ -166,16 +178,32 @@ def diffGamma(coneData, params):
     return M.Matrix([d_0, d_1]).copyTrans()
 
 
-def phi(params,cD):
-    return polyFunctional(cD, gamma(cD,params))
+def phi( params , cD ):
+    return 1 * polyFunctional(cD, gamma(cD,params))
+
+def sigma( params , cD ):
+    n = len( cD )
+    point = gamma( cD , params )
+    touchedPoints = getConeVolIteratedVertices( cD , point )
+
+    #result = M.dist( point , touchedPoints[ n-1 ]) ** 2
+
+    center = [ 0 , 0 ]
+    for point in touchedPoints:
+        center = M.addScaleVek( center , 1.0 / n, point )
+
+    result = M.norm( center )**2 + phi( params , cD )
+
+    return result
+
 
 # is this the correct gradient?
 def gradPhi(params,cD):
 
-    M = gradGamma(cD, params)
+    A = gradGamma(cD, params)
     v = gradPolyFunctional(cD, gamma(cD, params))
 
-    return M.image(v)
+    return M.scaleVek( 1 , A.image(v))
 
 def gradPhiApprox( params , cD , h ):
     e_1 = [1, 0]
@@ -189,18 +217,7 @@ def gradPhiApprox( params , cD , h ):
 
     return [ quotient_diff1 , quotient_diff2 ]
 
-def diffConeVolIteratorApprox( params , cD , h ):
-    e_1 = [1, 0]
-    e_2 = [0, 1]
 
-    point_diff1 = M.addVek(params, M.scaleVek(h, e_1))
-    quotient_diff1 = M.subVek( coneVolIterator( cD , point_diff1) ,  coneVolIterator( cD , params ) )
-    quotient_diff1 = M.scaleVek( 1.0 / h , quotient_diff1 )
-    point_diff2 = M.addVek(params, M.scaleVek(h, e_2))
-    quotient_diff2 = M.subVek( coneVolIterator( cD , point_diff2 ) , coneVolIterator( cD , params))
-    quotient_diff2 = M.scaleVek( 1.0 / h , quotient_diff2 )
-
-    return M.Matrix( [ quotient_diff1 , quotient_diff2 ]).copyTrans()
 
 def g(a, x):
     return a * x[0] ** 2
@@ -280,6 +297,27 @@ def getConeVol(vertices):
 
         result.append([u[0],u[1],coneVolume])
     return result
+
+# it is pseudo, because u_i will not be normalized. This is not important for logMin inequality, since it cancels out
+def getPseudoConeVolRational(polygonRational):
+    result=[]
+    P = polygonRational
+    n=len(P)
+    for i in range( n ):
+        v = M.subVek( P[ i ] , P[ (i - 1 + n) % n ])
+        u = getClockRotation( v )
+
+        # this equals 1/2 * determinant, since norm of u is the same as norm of v, both get cancelled
+        volume =  f.Fraction( 1 , 2 ) * M.scal(u,P[i-1])
+        if volume < 0:
+            print('volume is negativ at ')
+            print(i)
+
+
+        result.append([u[0],u[1], volume ])
+    return result
+
+polygon_rationalTest = [ [ f.Fraction( 1 , 1 ) , f.Fraction( 0 , 1 )] , [ f.Fraction( 0 , 1 ) , f.Fraction( 1 , 1 )] , [ f.Fraction( -1 , 1 ) , f.Fraction( 0 , 1 )] , [ f.Fraction( 0 , 1 ) , f.Fraction( -1 , 1 )] ]
 
 A_test = M.Matrix( cD_test )
 cD_resultTest = getConeVol( [[ 1 , 1 ] , [ -1 , 1 ] , [ -1 , -1 ], [ 1 , -1 ] ] )

@@ -43,17 +43,6 @@ def getConeVol(vertices):
         result.append([u[0],u[1],coneVolume])
     return result
 
-cD_test = [[ 1 , 0 , 1], [ 0 , 1 , 1], [ -1  , 0 , 1],[ 0 , -1 , 1 ] ]
-
-A_test = M.Matrix( cD_test )
-cD_resultTest = getConeVol( [[ 1 , 1 ] , [ -1 , 1 ] , [ -1 , -1 ], [ 1 , -1 ] ] )
-B_test = M.Matrix( cD_resultTest )
-if M.distMatrix( A_test , B_test ) > 0.00001:
-    print( ' Fehler bei getConeVol in preSolver2 ')
-    print( cD_resultTest )
-polygon_hardcoreTest = rP.getRandomPolygon( 5 )
-cD_hardcoreTest = getConeVol( polygon_hardcoreTest )
-p=[1,0.5]
 
 def getGrid(n):
     result=[]
@@ -77,45 +66,55 @@ def min(grid , cD , f ):
     for pair in grid:
         while(True):
             try:
-              if(result[1]>f( cD , pair)):
-                result=[pair, f( cD ,pair)]
+              if(result[1]>f( pair , cD)):
+                result=[pair, f( pair , cD )]
               break
             except ZeroDivisionError:
                 #print('zero division at',pair)
                 break
     return result
 
-def scalGrad( cD , params ):
+def scalGrad( params , cD  ):
     return M.scal( cV.gradPhi( params , cD ) , params )
 
-def scalAbsGrad( cD , params ):
+def scalGradNormed( params , cD ):
+    v = params
+    w = cV.gradPhi( params , cD )
+    result = M.scal( w , v )
+    norm_1 = M.norm( v )
+    norm_2 = M.norm( w )
+
+    #if norm_2 * norm_1 == 0:
+    #    return 0
+    return result / ( norm_1 * norm_2 )
+
+def scalGradNormedApprox( params , cD ):
+    v = params
+    w = cV.gradPhiApprox( params , cD , 0.001)
+    result = M.scal( v , w )
+
+    result = result / ( M.norm( v ) * M.norm( w ) )
+
+    return result
+
+def scalAbsGrad( params , cD ):
     return math.fabs(M.scal( cV.gradPhi( params , cD ) , params ))
 
-def getOrthGrad( cD ):
+# exspect epsOrthGrad_array to contain upper bound for scalar product of pont and gradient
+def getOrthGrad( cD , epsOrthGrad_array ):
 
-    result = [ [ 0 , 0 ] , math.inf ]
+    epsOrthGrad = epsOrthGrad_array[0]
+    result = [ 0 , 0 ]
+    value_result = math.inf
     n = 2
 
-    while( result[1] > eps_orthGrad):
+    while( result[1] > epsOrthGrad):
         temp = min( getGrid( n ) , cD , scalAbsGrad )
         if temp[1] < result[1]:
             result = temp
         n = n + 1
 
     return result
-
-
-
-
-
-cD_random = cV.getConeVol(rP.getRandomPolygon( 5 ))
-
-eps_orthGrad = 0.01
-orthGrad_test =  getOrthGrad( cD_test )
-
-# print(cV.coneVolumeNewton( cD_test , [ orthGrad_test[0][0] , orthGrad_test[0][1] ] ) )
-
-# newton läuft gegen [ 0 , inf ] mit orthGrad_test-startpunkt bei [5.25, 7.0]. Der presolver ist nicht geeignet. Baue lieber Quadrat im 1. Quadranten, der eine Aufsteigsrichtung enthält. Verfeinere dann dieses Quadrat, ohne es zu vergrößern
 
 def startPoint():
     n=4
@@ -127,6 +126,7 @@ def startPoint():
             break
         n=n+1
     return result
+
 # returns empty array, if there is not point with positiv grad. returns point with smallest, positiv grad
 def getPositiveGrad( grid , cD ):
     result = []
@@ -161,18 +161,10 @@ def getLowPointOnGrid( grid , cD , upperBound ):
                 break
     return result
 
-def getLowPoint( cD , upperBound ):
-    result = []
-    n = 3
 
-    while( len(result) < 2 ):
-        n = n + 1
-        grid = getGrid(n)
-        result = getLowPointOnGrid( grid , cD , upperBound)
-
-    return result
-
-def getGoodLowPoint( cD , upperBound ):
+# exspect array to contain upperBound
+def getGoodLowNearPosGrad( cD , upperBound_array ):
+    upperBound = upperBound_array[0]
     result = []
     steps = 3
     stepSize = 0.5
@@ -184,7 +176,7 @@ def getGoodLowPoint( cD , upperBound ):
         transGridMid(grid_neg, posGrad)
         result = getLowPointOnGrid(grid_neg, cD, upperBound)
         stepSize = stepSize / 2.0
-        if ( stepSize / 2.0 ) <= mE.getMachEps():
+        if stepSize + 2 == 2:
             print( ' wow das ist klein ')
             steps = steps + 1
             stepSize = 0.5
@@ -196,15 +188,15 @@ def getGoodLowPoint( cD , upperBound ):
 def getZeroGradOnLine( cD , point_neg , point_pos  , eps):
     f = scalGrad
     midPoint = M.getMidPoint( point_neg , point_pos )
-    while math.fabs( f( cD , midPoint )) > eps:
-        if f( cD , midPoint ) > 0:
+    while math.fabs( f( midPoint, cD )) > eps:
+        if f( midPoint , cD ) > 0:
             point_pos = midPoint
             midPoint = M.getMidPoint( point_neg , point_pos)
         else:
             point_neg = midPoint
             midPoint = M.getMidPoint(point_neg, point_pos)
         print( midPoint )
-        print( f( cD ,midPoint) )
+        print( f( midPoint , cD ) )
     return midPoint
 
 #point_zero = [ 0.1 , 0.001 ]
@@ -215,7 +207,7 @@ def getZeroGradOnLine( cD , point_neg , point_pos  , eps):
 
 # is a traingular grid!
 # ordering could be improved by starting in the middle and then go to the diagonalStart/diagonalEnd
-# but when you start in the middle, you get an edge case every uneventh diagonal (has an even number of points, no middle)
+# but when you start in the middle, you get an edge case every odd diagonal (has an even number of points, no middle)
 def getDistOrderedGrid( steps , stepSize ):
     grid = []
     n = math.floor( steps / stepSize )
@@ -274,7 +266,7 @@ def getNearestNegGrad( orderedGrid , cD , params_posGrad):
     for point in orderedGrid:
         while (True):
             try:
-                if scalGrad( cD , point ) <= 0:
+                if scalGrad( point, cD ) <= 0:
                     if len(result) == 0 or M.dist( point , params_posGrad ) < M.dist( result , params_posGrad ) :
                         result = point
                 break
@@ -283,25 +275,22 @@ def getNearestNegGrad( orderedGrid , cD , params_posGrad):
                 break
     return result
 
-grid_test2 = getDistOrderedGrid( 1 , 0.2)
-point_test2 = [ 1.1 , 1.001 ]
-result_test2 = getNearestNegGrad( grid_test2 , cD_test , [ 1 , 1 ])
-if scalGrad( cD_test , result_test2 ) > 0:
-    print( ' test von getNearestNegGrad failed. Result was empty or has wrong scalar product with grad')
 
 
 def getPosGradStart( cD ):
     posGrad = []
     n = 4
-    # dieser part wächst mit n^4 ... kann man zu n^2 verbessern, indem man das grid in vorher berechnete Schranken baut
     while len(posGrad) == 0:
         grid_pos = getGrid(n)
         posGrad = getPositiveGrad(grid_pos, cD)
         n = n + 1
     return posGrad
 
-def getStart_PolytopRetrieval( cD , eps ):
 
+# exspects array to contain [ eps ] whereas eps is upper bound for scalar product of point and gradient
+def getOrthogonalGradStart( cD , eps_array ):
+
+    eps = eps_array[0]
     posGrad = getPosGradStart( cD )
     print( 'habe pos grad gefunden')
     print(posGrad)
@@ -410,3 +399,108 @@ def lineSolution( cD , params ):
 #print( cV.phi( result_test , cD_test ))
 #print( cV.phi( [ 1 , 1 ] , cD_test ))
 # gthe problem is: low points will come far away which will not lead to a minimum... so I shoudl better search behind the posGrad points...
+
+
+def getMinOnGrid( grid , f , cD ):
+    result = [ -1 ,  -1 ]
+    value_result = math.inf
+
+    for point in grid:
+        while(True):
+            try:
+                value_point = f( point, cD )
+                if value_point < value_result:
+                    value_result = value_point
+                    result[0] = point[0]
+                    result[1] = point[1]
+                break
+            except ZeroDivisionError:
+                break
+    return [ result , value_result ]
+
+def getQuadraticGrid( size, stepSize , midPoint):
+    grid = []
+    n = math.floor(size * 1.0 / stepSize)
+    for i in range(n):
+        for j in range(n):
+            point = [i * stepSize - size / 2.0 + midPoint[0], j * stepSize - size / 2.0 + midPoint[1]]
+            if point[0] >= 0 and point[1] >= 0:
+                grid.append( point )
+
+    return grid
+
+
+# exspects array to contain [ f , upperBound ] whereas f is a non negativ function f(params,coneData )
+def quadraticMinSearcher( cD , F_Bound_array ):
+    f = F_Bound_array[0]
+    upperBound = F_Bound_array[1]
+    size = 1000
+    stepSize = size / 100.0
+    midPoint = [ size / 2.0 , size / 2.0 ]
+    grid = getQuadraticGrid( size , stepSize , midPoint )
+    minData = getMinOnGrid( grid , f , cD )
+    result = minData[0]
+    value_result = minData[1]
+
+    while( value_result > upperBound ):
+        size = size / 2
+        if( size + 128 == 128 ):
+            break
+        stepSize = size / 100.0
+        midPoint = result
+        grid = getQuadraticGrid(size, stepSize, midPoint)
+        minData = getMinOnGrid(grid, f, cD)
+        result = minData[0]
+        value_result = minData[1]
+    return [ result , value_result ]
+
+
+#P_hardTest = rP.getRandomPolygon( 5 )
+#cD_hardTest = cV.getConeVol( P_hardTest )
+#print( 'here comes the polygon:')
+#print( P_hardTest )
+#print( ' here comes minData of phi with gamma point : ')
+#minData_phi = quadraticMinSearcher( cD_hardTest , [ cV.phi , 0.001 ] )
+#print( minData_phi )
+#print( cV.gamma( cD_hardTest , minData_phi[0] ) )
+#print( ' here comes minData of sigma with gamma point : ')
+#minData_sigma = quadraticMinSearcher( cD_hardTest , [ cV.sigma , 0.001 ] )
+#print( minData_sigma )
+#print( cV.gamma( cD_hardTest , minData_sigma[0] ) )
+
+def quadraticMinSearcherTest( repeats ):
+    eps = 0.00001
+    fails = 0
+    while repeats > 0:
+        print( repeats )
+        repeats -= 1
+        P = rP.getRandomPolygon( 5 )
+        cD = cV.getConeVol( P )
+
+        result = quadraticMinSearcher( cD , [ cV.sigma , eps ] )[0]
+        if M.dist( cV.gamma( cD , result) , P[0]) > 0.1:
+            if cV.sigma( result , cD ) < eps:
+                print( 'not unique solution' )
+                print( P )
+                print(result)
+                print( cV.gamma( cD , result ) )
+                fails += 1
+                break
+            else:
+                print('quadratic searcher failed by by')
+                print( cV.sigma( result , cD ) )
+                print(P)
+                print(result)
+                print(cV.gamma(cD, result))
+                fails += 1
+    return fails
+
+print( quadraticMinSearcherTest( 0 ) )
+
+def nonCenteredCleverLowValue( cD ):
+    return True
+
+
+
+
+

@@ -6,6 +6,12 @@ import coneVol as cV
 import matrix as M
 import matplotlib.pyplot as mp
 import machEps as mE
+import fractions as f
+
+eps_max = 4096 * mE.getMachEps()
+eps_min = 4096 * mE.getMachEps()
+
+generalMaxRadiusBound = 1
 
 def getRandomPolygon(number):
     polarResult = getRandomNoncenteredPolarPolygon(number)
@@ -26,6 +32,13 @@ def getRandomNoncenteredPolarPolygon(m):
         orderedPolarInsertion(polarResult, angle)
         steps = steps + 1
     return polarResult
+
+def getVolume( orderedPolygon ):
+    coneVolume = cV.getConeVol(orderedPolygon)
+    volume = 0
+    for data in coneVolume:
+        volume = volume + data[2]
+    return volume
 
 def makeUnitVolume( orderedPolytop ):
     coneVolume = cV.getConeVol( orderedPolytop )
@@ -100,22 +113,75 @@ def getCartesian( vertices ):
         result.append( polar( v[0] , v[1] ) )
     return result
 
+def getPolar( vertices_polar ):
+    result = [ ]
+    for v in vertices_polar:
+        result.append( reversePolar( v[0] , v[1] ) )
+    return result
+
+# seems to work well, was tested in polygonTest...
 def makeCentered( vertices ):
 
-    center = [ 0 , 0 ]
-    i=0
+    center = getCenter(vertices)
 
-    for v in vertices:
-        center = M.subVek( center , v )
-    center = M.scaleVek( 1 / len(vertices) , center )
+    for point in vertices:
+        point[0] = point[0] - center[0]
+        point[1] = point[1] - center[1]
 
-    while i < len(vertices):
-        vertices[ i ] = M.addVek( vertices[ i ] , center )
-        i = i + 1
+def translateRational( verticesRational , translationRational):
 
-# test = [ [ 1 , 1 ] , [ 0 , 0 ] , [ 0 , 1 ] , [ 1 , 0 ] ]
+    for point in verticesRational:
+        point[0] = point[0] - translationRational[0]
+        point[1] = point[1] - translationRational[1]
 
-# makeCentered( test )
+def getCenter( vertices ):
+
+    P = vertices
+    x = 0
+    y = 0
+    n = len(P)
+    volume = 0
+
+    for i in range(n):
+        p = P[i]
+        q = P[(i + 1) % n]
+
+        determinante = (p[0] * q[1] - q[0] * p[1])
+
+        x += (p[0] + q[0]) * determinante
+        y += (p[1] + q[1]) * determinante
+
+        volume += 0.5 * determinante
+
+    x = x / ( 6.0 * volume )
+    y = y / ( 6.0 * volume )
+    center = [ x , y ]
+    return center
+
+def getCenterAndVolumeRational( verticesRational ):
+
+    P = verticesRational
+    x = f.Fraction( 0 , 1)
+    y = f.Fraction( 0 , 1)
+    n = len(P)
+    volume = f.Fraction( 0 , 1)
+
+    for i in range(n):
+        p = P[i]
+        q = P[(i + 1) % n]
+
+        determinante = (p[0] * q[1] - q[0] * p[1])
+
+        x += (p[0] + q[0]) * determinante
+        y += (p[1] + q[1]) * determinante
+
+        volume += f.Fraction( 1 , 2) * determinante
+
+    x = x / ( f.Fraction( 6 , 1) * volume )
+    y = y / ( f.Fraction( 6 , 1) * volume )
+    center = [ x , y ]
+    return [ center , volume ]
+
 
 # better distribution: do not set angle of first point as 0
 def orderedPolarInsertion( polarVertices , angle ):
@@ -126,8 +192,8 @@ def orderedPolarInsertion( polarVertices , angle ):
     right1 = neighbours[2]
     right2 = neighbours[3]
 
-    max = maxRadius( [ left2, left1 , right1 , right2 ] , angle )
-    min = minRadius( left1, right1 , angle )
+    max = maxRadius( [ left2, left1 , right1 , right2 ] , angle ) - eps_max
+    min = minRadius( left1, right1 , angle ) + eps_min
 
     if min > max:
         print('oh shit')
@@ -175,9 +241,69 @@ def getAngle(point):
 #better distribution: select random n random angles between 0 and pi, then order them and return an array with every angle
 # berücksichtigt das hier die periodizität, also pi = 3*pi
 
+def downRoundVertices( vertices, digits ):
+
+    for point in vertices:
+
+        factor = 10**digits
+
+        point[0] = math.floor( point[0] * factor ) / factor
+        point[1] = math.floor( point[1] * factor ) / factor
+
+def roundVertices(vertices, digits):
+    for point in vertices:
+        factor = 10 ** digits
+        stretched_x = point[0] * factor
+        stretched_y = point[1] * factor
+        if math.floor( stretched_x * 10 ) % 10 < 5:
+            point[0] = math.floor(stretched_x) / factor
+        else:
+            point[0] = ( math.floor(stretched_x) + 1 ) / factor
+
+        if math.floor( stretched_y * 10 ) % 10 < 5:
+            point[1] = math.floor(stretched_y) / factor
+        else:
+            point[1] = ( math.floor(stretched_y) + 1 ) / factor
+
+
+tester_1 = [ [ 1.1 , 1.5 ] , [ 1.6 , 1.1 ] , [ 1.1 , 1.1 ] , [ 1.7 , 1.7 ] ]
+
+tester_2 = [ [ 1.1 , 1.5 ] , [ 1.6 , 1.1 ] , [ 1.1 , 1.1 ] , [ 1.7 , 1.7 ] ]
+
+tester_roundDownResult = [ [ 1 , 1 ] , [ 1 , 1 ] , [ 1 , 1 ] , [ 1 , 1 ] ]
+tester_roundResult = [ [ 1 , 2 ] , [ 2 , 1 ] , [ 1 , 1 ] , [ 2 , 2 ] ]
+downRoundVertices(tester_1 , 0 )
+roundVertices( tester_2 , 0)
+if(M.distMatrix( M.Matrix(tester_roundDownResult) , M.Matrix(tester_1)) > 0 ):
+    print('Fehler bei roundDownVertices')
+if( M.distMatrix( M.Matrix(tester_roundResult) , M.Matrix(tester_2))) > 0:
+    print('Fehler bei roundVertices')
+
+
+def makeBaryCentered( cartesianPolygon ):
+    P = cartesianPolygon
+    barycenter = [ 0 ,  0 ]
+    n = len(P)
+
+    for vertex in P:
+        barycenter = M.addScaleVek( barycenter , 1 / n , vertex )
+
+    for vertex in P:
+        vertex[0] -= barycenter[0]
+        vertex[1] -= barycenter[1]
+
+def getBaryCenter( cartesianPolygon ):
+    P = cartesianPolygon
+    barycenter = [ 0 ,  0 ]
+    n = len(P)
+
+    for vertex in P:
+        barycenter = M.addScaleVek( barycenter , 1 / n , vertex )
+
+    return barycenter
 
 # can be improved if ' u ' is already in polar coordinates
-def supportFunction( K_polar , u ):
+def supportFunctionPolar( K_polar , u ):
     angle = getAngle( u )
     neighbours = getPolarNeighbours( K_polar , angle )
     v = getCartesian([neighbours[1]])[0]
@@ -189,6 +315,56 @@ def supportFunction( K_polar , u ):
         print( u )
         return h_tilde / mE.getMachEps()
     return h_tilde / M.norm(u)
+
+# can be improved if ' u ' is already in polar coordinates
+def supportFunctionCartesianCentered( K_cartesianCentered , u ):
+    if math.fabs( M.norm( u ) - 1 ) > 0.0001:
+        print( ' u is not normed for support function, result needs to be divided by norm ')
+        return []
+    P = K_cartesianCentered
+
+    result = -math.inf
+
+    for v in P:
+        # I do not need a special rational support function, do I?
+        value = M.scal(v, u)
+        if value > result:
+            result = value
+
+    return result
+
+def supportFunctionCartesianCentered2( K_cartesianCentered , u ):
+    if math.fabs( M.norm( u ) - 1 ) > 0.0001:
+        print( ' u is not normed for support function, result needs to be divided by norm ')
+        return []
+    P = K_cartesianCentered
+
+    result = -math.inf
+
+    for v in P:
+        # I do not need a special rational support function, do I?
+        value = M.scal(v, u)
+        if value > result:
+            result = value
+
+    return result
+
+def supportFunctionCartesianCenteredRational(K_cartesianCenteredRational, u_Rational):
+
+    P = K_cartesianCenteredRational
+    n = len(P)
+    result = -math.inf
+
+    # luckily, norm of u_i cancels in the fraction of the logMin product inequality...
+    # hier muss ich noch dran arbeiten...
+
+    for v in P:
+        # I do not need a special rational support function, do I?
+        value = M.scal( v , u_Rational)
+        if value > result:
+            result = value
+
+    return result
 
 
 def angleIsContained( polarVertices , angle ):
@@ -230,9 +406,18 @@ def randomAngles( n ):
 def randomRadius(min, max):
     #randomRadius will always be below 10 + min . Is that good?
     if( max == math.inf ):
-        return random.random() * ( 8 - min ) + min
-
+        if( min < generalMaxRadiusBound ):
+            return random.random() * ( generalMaxRadiusBound - min ) + min
+        else:
+            return random.random() *  min + min
     return min + ( max - min ) * random.random()
+
+def reversePolar( x_koord , y_koord ):
+
+    angle = getAngle( [ x_koord , y_koord ])
+    r = math.sqrt( x_koord *+2  + y_koord ** 2 )
+
+    return [ angle , r ]
 
 def polar(angle, radius):
     x= radius * math.cos(angle)
@@ -295,6 +480,33 @@ def getMax(v,w,angle):
         return math.inf
     return result[0]
 
+def getMinForSupport( v , w , u ):
+    u_1 = u
+    u_2 = M.subVek(v,w)
+    #print(u_1)
+    U= M.Matrix([u_1,u_2]).copyTrans()
+    #U.list()
+    result=U.lgsSolve(v)
+    # my lgsSolver returns a 'solution' even if v is not in im(M) . Therefore the if-check needs to get adjusted
+    if( M.dist( U.image(result) , v ) > 0.0001 ):
+        return -math.inf
+    return result[0]
+
+def getMinForSupport2( v , w , u ):
+    u_1 = u
+    u_2 = M.subVek(v,w)
+    #print(u_1)
+    U= M.Matrix([u_1,u_2]).copyTrans()
+    #U.list()
+    result=U.lgsSolve2x2(v)
+    # my lgsSolver returns a 'solution' even if v is not in im(M) . Therefore the if-check needs to get adjusted
+    if( M.dist( U.image(result) , v ) > 0.0001 ):
+        return -math.inf
+    return result[0]
+
+
+
+
 def getMin(v,w,angle):
     u_1 = polar(angle,1)
     u_2 = M.subVek(v,w)
@@ -308,35 +520,31 @@ def getMin(v,w,angle):
 
 
 
-# test = [ [ 0 , 2 ] , [ 0.25 * math.pi , 1.42  ] , [ 0.75 * math.pi , 1.42 ] , [ 1 * math.pi , 2 ] ]
-# neighbours = getNeighbours( test , 0.5 * math.pi )
-# print( maxRadius( neighbours , 0.5 * math.pi ) )
-
-v=[0,1]
-w=[1,0]
-angle= math.pi/4
-vertices=[ [ 1, 0 ],  [ 0 , -1 ] , [ -1 , 0 ] ]
-# ein result mit zwei gleichen Punkten: [[1.3506563545534096, 0.0], [1.8164857151592047, 0.0], [1.3506563545534096, 0.0], [1.4946652011162949, 0.0]]
-#P = getRandomOriginPolarTriangle()
-# - minRadius testen und einbauen in getNextPoint von getRandomPolygon()
-# - minRadius ist notwendig, aber vllt muss man bei maxRadius und minRadius nur die Vorgänger überprüfen ... -> mache 2
-# - habe einmal [[44.44310714415645, 0.0], [-2.868745831991136, 18.486864345855214], [-14.100910361720999, -23.4225736149311], [-13.38842882794231, -23.35396107847429], [-14.085022122502007, 28.289670347550175]]
-#   rausbekommen. Das ist kein 5-Eck, zwei Punkte sind in der konvexen Hülle der anderen enthalten...
 
 
+def printRationalPolygon( rationalPolygon ):
+    string_result = ' [ '
+    for point in rationalPolygon:
+        frac0 = point[0]
+        frac1 = point[1]
+        if rationalPolygon.index(point) < len(rationalPolygon) - 1 :
+            string_result = string_result + ' [ %d/%d , %d/%d ] ,' % (frac0.numerator , frac0.denominator , frac1.numerator , frac1.denominator )
+        else:
+            string_result = string_result + ' [ %d/%d , %d/%d ] ' % (frac0.numerator, frac0.denominator, frac1.numerator, frac1.denominator)
 
-# oh shit
-# [[1, 0], [0, -1], [-1, 0]]
-# 1.4898145505571896
-# 1.5915425615297067
-# 3.404131410794002
-# oh shit
-# [[1, 0], [0, -1], [-1, 0]]
-# 1.7818867557071751
-# 1.8200557773619472
-# 3.6352952855406166
+    print(string_result + ' ] ')
 
-# vertices = [ [ 1 , 1 ] , [ -1 , 1 ] , [ 0 , 1 ] ]
-# testPoint = [ 1 , 1 ]
-# print( containsPoint( vertices , testPoint ) )
-# [[2.6280147103737663, -3.9985536987429766], [-1.2515947854797322, 0.22196113640884813], [0.7102207863932186, 0.856232362200955]] may have been angles were the random triangle did not contain the origin! (mixed up checks, I am not sure about the tests...)
+
+
+
+
+M_test = M.Matrix( [ [ f.Fraction( 0 , 1) , f.Fraction( 2 , 1) ] , [ f.Fraction( 2 , 1) , f.Fraction( 0 , 1) ]])
+b_test = [ f.Fraction( 10 , 1) , f.Fraction( 8 , 1) ]
+solutuion_test = M_test.lgsSolve( b_test )
+exspectedSolution_test =  [ f.Fraction( 4 , 1) , f.Fraction( 5 , 1) ]
+
+if M.dist( exspectedSolution_test , solutuion_test ) > 0.001 :
+    print( exspectedSolution_test )
+    print( solutuion_test )
+    print( ' Fehler in lgs solve für rationale Zahlen')
+

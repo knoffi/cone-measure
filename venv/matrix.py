@@ -347,6 +347,25 @@ class Matrix:
             i += 1
         return im
 
+    def lgsSolve2x2( self, b):
+        if self.size() != [ 2 , 2]:
+            print( 'only 2x2 matrices are allowed')
+            return[]
+
+        a_11 = self.rows[0][0]
+        a_12 = self.rows[0][1]
+        a_21 = self.rows[1][0]
+        a_22 = self.rows[1][1]
+        det = a_11 * a_22 - a_21 * a_12
+
+        A_adjunct = Matrix( [ [ a_22 , - a_12 ] , [ -a_21 , a_11 ] ] )
+        result = A_adjunct.image( b )
+        result[0] =  ( 1 / det ) * result[0]
+        result[1] = ( 1 / det ) * result[1]
+
+        return result
+
+
     def appended(self, B, b, v, indices):
         i = 0
         Matrix = self.copy()
@@ -360,6 +379,11 @@ class Matrix:
             vektor.append(b[indices[i]])
             i += 1
         return [Matrix, vektor]
+
+matrix_testA = Matrix( [ [ 1 , 3 ] , [ 2 , 5 ] ] )
+b_test = [ 5 , 9 ]
+
+#print( matrix_testA.lgsSolve2x2( b_test ) )
 
 
 a = [[0, 1], [1, 0], [2, 4]]
@@ -404,6 +428,7 @@ def subVek(v, w):
         i += 1
     return d
 
+
 # only works, if both vectors have the same length?
 def polarAngleSub( v_polar , w_polar ):
     alpha = v_polar[0]
@@ -431,6 +456,9 @@ def getMidPoint( v , w ):
         i = i + 1
     return result
 
+def addScaleVek( v , alpha , w ):
+    return addVek( v , scaleVek( alpha , w ) )
+
 
 # recently, this method calculated the norm squared (without root), and coneVolumeNewton worked
 def norm(vector):
@@ -439,6 +467,25 @@ def norm(vector):
 def dist( v , w ):
     diff = subVek( v , w )
     return norm( diff )
+
+def subMatrix( A , B):
+    n = A.size()[0]
+    result_rows = []
+    for i in range(n):
+        v = A.rows[i]
+        w = B.rows[i]
+        result_rows.append( subVek( v , w ) )
+    return Matrix(result_rows)
+
+def addMatrix( A , B):
+    n = A.size()[0]
+    result_rows = []
+    for i in range(n):
+        v = A.rows[i]
+        w = B.rows[i]
+        result_rows.append( addVek( v , w ) )
+    return Matrix(result_rows)
+
 
 def distMatrix( A , B ):
     result = 0

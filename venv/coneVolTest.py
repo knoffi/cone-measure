@@ -15,6 +15,8 @@ def coneVolTest( polygon , coneVolume , eps):
         print( 'coneVolTest failed with polygon')
         print( polygon )
 
+coneVolTest( [[1,1] , [ -1 , 1] , [ -1 , -1 ] , [1 , -1]] , [ [ 1 , 0 , 1 ] , [ 0 , 1 , 1] , [-1 , 0 , 1 ] , [ 0 , -1 , 1 ]] , 0.1)
+
 def getSumOuterNormal( polygon ):
     coneVol = cV.getConeVol( polygon )
     normSum=0
@@ -185,7 +187,7 @@ def gradPolyFunctionalTest_array( polygon_list , point_list , eps , h ):
         index += 1
 
 def hMethodNextVertexCheck( u , V, point , eps , h):
-
+    nextVektor = cV.getNextVertex(u, V, point)
     while(True):
         try:
             nextVektor = cV.getNextVertex( u , V , point)
@@ -239,11 +241,13 @@ def hMethodConeVolIteratorCheck( cD ,  point , eps , h):
     diff_1 = diff.image( e_1 )
     diff_2 = diff.image( e_2 )
 
-    point_diff1 = M.addVek( point , M.scaleVek( h , e_1 ))
-    quotient_diff1 = M.subVek( M.scaleVek( 1 / h , cV.coneVolIterator( cD , point_diff1 ) ) , M.scaleVek( 1 / h , cV.coneVolIterator( cD , point ) ) )
+    point_diff11 = M.addVek( point , M.scaleVek( h , e_1 ))
+    point_diff12 = M.subVek(point, M.scaleVek(h, e_1))
+    quotient_diff1 = M.subVek( M.scaleVek( 1 / (2*h) , cV.coneVolIterator( cD , point_diff11 ) ) , M.scaleVek( 1 / (2*h) , cV.coneVolIterator( cD , point_diff12 ) ) )
 
-    point_diff2 = M.addVek(point, M.scaleVek(h, e_2))
-    quotient_diff2 = M.subVek(M.scaleVek(1 / h, cV.coneVolIterator( cD , point_diff2 ) ), M.scaleVek(1 / h, cV.coneVolIterator( cD ,  point)))
+    point_diff21 = M.addVek(point, M.scaleVek(h, e_2))
+    point_diff22 = M.subVek(point, M.scaleVek(h, e_2))
+    quotient_diff2 = M.subVek(M.scaleVek(1 / (2*h), cV.coneVolIterator( cD , point_diff21 ) ), M.scaleVek(1 / (2*h), cV.coneVolIterator( cD ,  point_diff22)))
 
     difference_1 = M.dist( quotient_diff1 , diff_1)
     difference_2 = M.dist( quotient_diff2 , diff_2)
@@ -261,49 +265,14 @@ def hMethodConeVolIteratorCheck( cD ,  point , eps , h):
         return False
     return True
 
-# has to be taken with diff from coneVolumeIterator because gamma changes determinant
-def getDistOfDet( params , cD ):
-    diff = cV.diffConeVolumeIterator( cD , params)
-    det = diff.rows[0][0] * diff.rows[1][1] - diff.rows[1][0] * diff.rows[0][1]
-    return math.fabs( det - 1 )
-
-def checkDetOfDiff( params , cD , eps ):
-    if getDistOfDet( params , cD) < eps:
-        return True
-    else:
+def coneVoliteratorTest ( cD , firstPointOfPolygon , eps):
+    vector = cV.getConeVolIterator( cD , firstPointOfPolygon )
+    if M.dist( vector , firstPointOfPolygon ) >= eps :
+        print( ' error at coneVolIterator Test with first polygon vertex and cD :')
+        print(firstPointOfPolygon)
+        print(cD)
         return False
-
-def getDistOfDetApprox( params , cD ):
-    diff = cV.diffConeVolIteratorApprox( params , cD , 0.001)
-    det = diff.rows[0][0] * diff.rows[1][1] - diff.rows[1][0] * diff.rows[0][1]
-    return math.fabs( det - 1 )
-
-def checkDetOfDiffApprox( params , cD , eps ):
-    if getDistOfDetApprox( params , cD) < eps:
-        return True
-    else:
-        return False
-
-def testerDetOfDiff( repeats, range_test, eps ):
-    complete_fail = 0
-    approx_fail = 0
-    analytic_fail = 0
-    for i in range( repeats ):
-        P = rP.getRandomPolygon( 5)#random.random() * 5 + 3 )
-        cD = cV.getConeVol( P )
-        point = [ random.random() * 2 * range_test - range_test , random.random() * 2 * range_test - range_test ]
-        if not checkDetOfDiff( point , cD , eps):
-            if not checkDetOfDiffApprox( point , cD , eps ):
-                complete_fail += 1
-            else:
-                analytic_fail += 1
-        else:
-            if not checkDetOfDiffApprox( point , cD , eps):
-                approx_fail += 1
-
-    print( [ repeats , complete_fail , analytic_fail , approx_fail ] )
-
-testerDetOfDiff( 10000 , 1 , 0.00000001)
+    return True
 
 
 
@@ -312,18 +281,22 @@ testerDetOfDiff( 10000 , 1 , 0.00000001)
 #gradPolyFunctionalTest_random( 1 , 5 , 0.1 , 0.000000000001  , 0.0001 , True )
 #polyFunctionalTest( 20 , 5 , 0.000001 )
 
-polygons_test = [
-    [[9.203330824769969, 5.091434487244416], [-5.6003542709433995, 2.0960543313403526], [-2.469763362739936, -1.9552999854419217], [-1.689083779038116, -2.2524032885794893], [0.5558705879514816, -2.979785544563356]]
-]
-cD_test = cV.getConeVol(polygons_test[0])
-points_test = [ [9.202238149608856, 5.089797764821817] ]
+#polygons_test = [
+#    [[9.203330824769969, 5.091434487244416], [-5.6003542709433995, 2.0960543313403526], [-2.469763362739936, -1.9552999854419217], [-1.689083779038116, -2.2524032885794893], [0.5558705879514816, -2.979785544563356]]
+#]
+#cD_test = cV.getConeVol(polygons_test[0])
+#points_test = [ [9.202238149608856, 5.089797764821817] ]
 
-cD_testeasy = [[ 1 , 0 , 1 ] , [ 0 , 1 , 1 ] , [ -1 , 0 , 1 ] , [ 0 , -1 , 1 ] ]
-point_testeasy = [ 1 , 1.001 ]
+#polygon_easy = [ [ 1, 0 ] , [ 0 , 1 ] , [ -1 , 0 ] , [ 0 , -1 ] ]
+#cD_testeasy = cV.getConeVol(polygon_easy)
+#point_testeasy = [ 1 , 1.001 ]
 
 #pT.plotPoly( polygons_test[0] , 'r')
 #gradPolyFunctionalTest_array( polygons_test , points_test , 0.1 , 0.0001 )
-cD_test = cV.getConeVol( polygons_test[0])
+#cD_test = cV.getConeVol( polygons_test[0])
 # print( cV.getConeVolIterator( cD_testeasy , point_testeasy ))
-hMethodConeVolIteratorCheck( cD_testeasy , point_testeasy , 0.1 , 0.00001)
+#coneVoliteratorTest( cD_testeasy , [ 1 , 1.001 ] , 0.1)
+#hMethodConeVolIteratorCheck( cD_testeasy , [1 , 0.000001] , 0.1 , 0.01)
+
+
 
