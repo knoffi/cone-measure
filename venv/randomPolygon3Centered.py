@@ -2,7 +2,7 @@ from cmath import sqrt
 import math
 import numpy
 import random
-import coneVol as cV
+import coneVol2 as cV
 import matrix as M
 import matplotlib.pyplot as mp
 import machEps as mE

@@ -468,7 +468,7 @@ def quadraticMinSearcher( cD , F_Bound_array ):
 #print( minData_sigma )
 #print( cV.gamma( cD_hardTest , minData_sigma[0] ) )
 
-def quadraticMinSearcherTest( repeats ):
+def quadraticMinSearcherTest( repeats , f ):
     eps = 0.00001
     fails = 0
     while repeats > 0:
@@ -477,7 +477,7 @@ def quadraticMinSearcherTest( repeats ):
         P = rP.getRandomPolygon( 5 )
         cD = cV.getConeVol( P )
 
-        result = quadraticMinSearcher( cD , [ cV.sigma , eps ] )[0]
+        result = quadraticMinSearcher( cD , [ f , eps ] )[0]
         if M.dist( cV.gamma( cD , result) , P[0]) > 0.1:
             if cV.sigma( result , cD ) < eps:
                 print( 'not unique solution' )
@@ -495,7 +495,52 @@ def quadraticMinSearcherTest( repeats ):
                 fails += 1
     return fails
 
-print( quadraticMinSearcherTest( 0 ) )
+def quadraticMinSearcherTestWithoutGamma( repeats , f ):
+    eps = 0.01
+    notUnique = 0
+    singDiffMatrix = 0
+    fails = 0
+    while repeats > 0:
+        repeats -= 1
+        P = rP.getRandomPolygon( 5 )
+        cD = cV.getConeVol( P )
+
+        result = quadraticMinSearcher( cD , [ f , eps ] )[0]
+        if M.dist( result , P[0]) > 0.1:
+            value = M.dist(cV.getConeVolIterator( cD ,  result ) , result)
+            if  value < eps:
+                print( 'not unique solution' )
+                print( P )
+                print(result)
+                notUnique += 1
+                break
+            else:
+                if f( result , cD ) < 0.01:
+                    print(" singular diff matrix ")
+                    print(P)
+                    print(result)
+                    print( f( result , cD ) )
+                    singDiffMatrix += 1
+                else:
+                    print('quadratic searcher failed by')
+                    print(P)
+                    print(result)
+                    fails += 1
+    return [notUnique , singDiffMatrix , fails]
+
+def isNilpotent( point , cD ):
+    A = cV.diffConeVolumeIterator( cD , point )
+    A.scale(-1)
+    A.add(M.idMatrix(2))
+    A.makeMatrixNormalized()
+    #result = diff.rows[0][0] * diff.rows[1][1] - diff.rows[0][1] * diff.rows[1][0]
+    result = A.mult(A)
+    return result.rows[0][0]**2 + result.rows[1][1]**2 + result.rows[1][0]**2 + result.rows[0][1]**2
+
+
+#print( quadraticMinSearcherTestWithoutGamma( 100, isNilpotent) )
+
+
 
 def nonCenteredCleverLowValue( cD ):
     return True

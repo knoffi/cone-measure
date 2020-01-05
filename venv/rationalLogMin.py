@@ -172,7 +172,7 @@ def logMinRationalAutoTest( repeats , digits ,  eps_logMinRational):
     print('done')
     print( [ logMinTrue , logMinFalse , centeredFails, logMinTriangleFalse  ] )
 
-logMinRationalAutoTest( 1000 , 3 , 0)
+#logMinRationalAutoTest( 1000 , 3 , 0)
 
 
 def getAveragePolygonConditions( digits , eps  ):

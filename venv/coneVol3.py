@@ -18,7 +18,7 @@ def nextVertex(u, volume, point):
     orth.append( u[0] )
 
     # assumes that 0 lies in K (i.e. point is not orthogonal)
-    d = M.scaleVek(2 * volume / M.scal(point, u), orth)
+    d = M.scaleVek(2 * volume / math.fabs(M.scal(point, u)), orth)
     temp = M.addVek(point, d)
     point[0] = temp[0]
     point[1] = temp[1]
@@ -90,7 +90,7 @@ def arrayPolyFunctional1(coneData, point, param):
     for i in param:
         result.append(polyFunctional(coneData, M.scaleVek(i, point)))
         if polyFunctional(coneData, M.scaleVek(i, point)) < eps_graph:
-            print(i)
+            print("I had to print something but it was deleted...")
     return result
 
 # changed
@@ -301,8 +301,9 @@ def getConeVol(vertices):
             divisor = mE.getMachEps()
         u = M.scaleVek( 1.0 / divisor , u_tilde )
 
-        height= M.scal(u,vertices[i-1])
+        height= math.fabs(M.scal(u,vertices[i-1]))
         if height < 0:
+            #this is okay if P does not contain 0
             print('height is negativ at ')
             print(i)
         facetVolume= M.norm(v)
