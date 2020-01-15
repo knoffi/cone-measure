@@ -82,6 +82,9 @@ if M.dist(getConeVolIterator( cD_test , point_test ) , point_test ) > 0.00001 :
 def polyFunctional(coneData, point):
     return M.dist(point, getConeVolIterator(coneData, point)) ** 2
 
+def polyFunct2(point , coneData):
+    return M.dist(point, getConeVolIterator(coneData, point)) ** 2
+
 if polyFunctional( cD_test , point_test ) > 0.0001:
     print( ' Fehler bei polyFunctional ')
 
