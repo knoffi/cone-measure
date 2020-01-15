@@ -74,6 +74,20 @@ class Matrix:
             j = 0
             i += 1
 
+    def matrixNorm(self):
+        result = 0
+        for row in self.rows:
+            for entry in row:
+                result += entry**2
+
+        return result
+
+    def makeMatrixNormalized(self):
+        norm = math.sqrt(self.matrixNorm())
+        if norm != 0 :
+            self.scale( 1 / norm )
+
+
     def plus(self, B):
         C = self.copy()
         C.add(B)
@@ -703,6 +717,7 @@ h = [3, -3, -9, -3]
 # Q=Matrix([[1,0],[0,1]])
 # q=[-2,3]
 Q = Matrix([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
 q = [-2, -3, -4]
 
 
@@ -779,6 +794,9 @@ def nearestPoint2(A, b, G, h, p, start):
     problem = LIQ(A, G, b, h, Q, q)
     return problem.activSet(start)
 
-
+A = Matrix( [ [ 2 , 0 ] , [ 2 , 0 ] ])
+A.makeMatrixNormalized()
+if( math.fabs( A.matrixNorm() - 1 ) > 0.0001 ):
+    print(" error in makeMatrixNormalized or matrixNorm ")
 # p = [-2, 5]
 # print('The closest point of the given intersection of half spaces to', p, 'ist', nearestPoint2(A, b, G, h, p, [6, 3]), '.')

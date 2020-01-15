@@ -506,7 +506,7 @@ if M.dist( center, center2) > 0.00001:
 
 #print( rP.supportFunction( support_test , u ) - 0.5 )
 
-repeats = 1000
+repeats = 0
 
 n = 0
 good_triangles = 0

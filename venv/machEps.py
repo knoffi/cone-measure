@@ -27,7 +27,3 @@ def splitVekAdd( bigVector , smallVector ):
 
 
 test_number = 11.6
-print(getMachEps())
-print( splitAdd( test_number , getMachEps() ) - ( test_number + getMachEps()))
-print( splitVekAdd( [ test_number , test_number ] , [ getMachEps() , getMachEps()]))
-print( M.addVek( [ test_number , test_number ] , [ getMachEps() , getMachEps() ] ) )
